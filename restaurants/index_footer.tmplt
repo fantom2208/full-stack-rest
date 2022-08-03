@@ -1,0 +1,25 @@
+</div>
+		</div>
+	</section>
+
+	<footer>
+		<div class="vertical-centerer flex-container">
+		  	<div class="flex-container space-between header-content">
+ 				<div>
+			  		<ul class="menu">
+                                                <li>Add new restaurant</li>
+						<li>Reserved</li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li>Contact us</li>
+			  		</ul>
+				</div>
+		  	</div>
+		</div>
+	</footer>
+
+</body>
+</html>
