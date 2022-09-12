@@ -1,0 +1,16 @@
+/server_back
+/templates
+/static
+
+database/README.txt
+database/__pycache__
+database/01_read_db.py
+database/02_update_db.py
+database/03_delete_rec.py
+database/1_manual_input_restrnt.py
+database/2_manual_input_menu.py
+database/3_manual_input_menu_price.py
+
+full_stack.txt
+flask.txt
+restaurantmenu.db
