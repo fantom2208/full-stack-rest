@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+  	<title>Nice food restaurants</title>
+	<!--
+	<link href={{ url_for('static', filename='styles.css') }} rel=stylesheet>
+	-->
+</head>
+<body>
+	<header>
+		<p>--- start of header ---</p>
+		<div class="vertical-centerer flex-container">
+		  	<div class="flex-container space-between header-content">
+				<div>
+			  		<span>
+						<img class="logo" src={{url_for('static', filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<div class="logo_name">
+							<h2>Eat and Rest</h2>
+						</div>
+			  		</span>
+				</div>
+				<div>
+			  		<ul class="menu">
+						<li><a href="/restaurants">Restaurants</a></li>
+						<li><a href="/restaurants/menu_items">All Menu</a></li>
+						<li>News & Promo</li>
+			  		</ul>
+				</div>
+		  	</div>
+		</div>
+		<p>--- end of header ---</p>
+	</header>
+
+	<section>
+		<div class="container">
+			<div class="portfolio">
+				<h1>Our all menu items</h1>
+                {% for item in menu_items %}
+					<div class="item div_post">
+					    <h2>
+							<a href="/restaurants/menu_items/mnu_id{{item.id}}">{{item.name}}</a> 
+						</h2>
+					    <p>
+							<span> {{item.description}} </span>
+						</p>
+					    <p> {{item.course}} </p>
+						{% if item.weight %}
+							<p> Dish weight: {{item.weight}} gr.</p>
+						{% endif %}
+						{% if item.content %}
+							<p> Content: {{item.content}} </p>
+						{% endif %}
+						<br><br>
+				    </div>
+				{% endfor %}
+            </div>
+		</div>
+	</section>
+
+	<footer>
+		<p>--- start of footer ---</p>
+		<div class="vertical-centerer flex-container">
+		  	<div class="flex-container space-between header-content">
+ 				<div>
+			  		<ul class="menu">
+                        <li>
+							<a href="/restaurants/">Back to restaurants</a>
+						</li>
+						<li>
+							<a href="/restaurants/menu_items/add">Add new menu item</a>
+						</li>
+						<li>Reserved</li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li>Contact us</li>
+			  		</ul>
+				</div>
+		  	</div>
+		</div>
+		<p>--- end of footer ---</p>
+	</footer>
+
+</body>
+</html>

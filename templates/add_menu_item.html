@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+  	<title>Nice food restaurants</title>
+	<!--
+	<link href={{ url_for('static', filename='styles.css') }} rel=stylesheet>
+	-->
+</head>
+<body>
+	<header>
+		<p>--- start of header ---</p>
+		<div class="vertical-centerer flex-container">
+		  	<div class="flex-container space-between header-content">
+				<div>
+			  		<span>
+						<img class="logo" src={{url_for('static', filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<div class="logo_name">
+							<h2>Eat and Rest</h2>
+						</div>
+			  		</span>
+				</div>
+				<div>
+			  		<ul class="menu">
+						<li><a href="/restaurants/">Restaurants</a></li>
+						<li><a href="/restaurants/menu_items/">All Menu</a></li>
+						<li>News & Promo</li>
+			  		</ul>
+				</div>
+		  	</div>
+		</div>
+		<p>--- end of header ---</p>
+	</header>
+
+	<section>
+		<div class="container">
+			<div class="portfolio">
+				<form action="{{ url_for('add_menu_item')}}" method = 'post'>
+					<dl>
+						<dt>Name:</dt>
+						<dd><input type ='text' size='30' name='name'></dd>
+						
+						<dt>Description:</dt>
+						<dd><textarea name = 'description' rows='10' cols='80'></textarea></dd>
+					
+						<dt>Course:</dt>
+						<dd><input type ='radio' name='course' value='Appetizer'>Appetizer</dd>
+					  	<dd><input type ='radio' name='course' value='Entree'>Entree</dd>
+					  	<dd><input type ='radio' name='course' value='Dessert'>Dessert</dd>
+				  		<dd><input type ='radio' name='course' value='Beverage'>Beverage</dd>
+
+						<dt>Dish weight:</dt>
+						<dd><input type ='text' size='30' name='weight'></dd>
+
+						<dt>Content:</dt>
+						<dd><textarea name = 'content' rows='5' cols='80'></textarea></dd>
+					</dl>
+		 
+					<input type='submit' name="add_button" value='Add menu item'>
+					<input type='submit' name="cancel_button" value='Cancel'>		 
+			  </form>
+            </div>
+		</div>
+	</section>
+
+	<footer>
+		<p>--- start of footer ---</p>
+		<div class="vertical-centerer flex-container">
+		  	<div class="flex-container space-between header-content">
+ 				<div>
+			  		<ul class="menu">
+                        <li>
+							<a href="/restaurants/">Back to restaurants</a>
+						</li>
+						<li>
+							<a href="/restaurants/menu_items/">Back to all menu items</a>
+						</li>
+						<li>Reserved</li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li>Contact us</li>
+			  		</ul>
+				</div>
+		  	</div>
+		</div>
+		<p>--- end of footer ---</p>
+	</footer>
+
+</body>
+</html>

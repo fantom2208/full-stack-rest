@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+  	<title>Nice food restaurants</title>
+	<!--
+	<link href={{ url_for('static', filename='styles.css') }} rel=stylesheet>
+	-->
+</head>
+<body>
+	<header>
+		<p>--- start of header ---</p>
+		<div class="vertical-centerer flex-container">
+		  	<div class="flex-container space-between header-content">
+				<div>
+			  		<span>
+						<img class="logo" src={{url_for('static', filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<div class="logo_name">
+							<h2>Eat and Rest</h2>
+						</div>
+			  		</span>
+				</div>
+				<div>
+			  		<ul class="menu">
+						<li><a href="/restaurants">Restaurants</a></li>
+						<li><a href="/restaurants/menu_items">All Menu</a></li>
+						<li>News & Promo</li>
+			  		</ul>
+				</div>
+		  	</div>
+		</div>
+		<p>--- end of header ---</p>
+	</header>
+
+	<section>
+		<div class="container">
+			<div class="portfolio">
+				<h1>{{rest_item.name}}</h1>
+                	<div class="item div_post">
+					    <img src={{url_for('static', filename = rest_item.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg' )}} width="270" alt="Restaurant logo">
+                        <br>
+						<span> {{rest_item.description}} </span>
+					    <p> {{rest_item.address}} </p>
+						<h4>
+							<a href="/restaurants/rst_id{{rest_item.id}}/edit">Edit {{rest_item.name}} info</a>
+							<br>
+							<a href="/restaurants/rst_id{{rest_item.id}}/delete">Delete {{rest_item.name}} and its menu</a>
+						</h4>
+						<h1>Our menu:</h1>
+						{% if mnu_itm_prs %}
+							{% for item in mnu_itm_prs %}
+								{% for menu in mnu_itms %}
+									{% if menu.id == item.menu_item_id %}
+										<h3>
+											<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{menu.id}}">{{menu.name}}</a>
+										</h3>
+										<p>{{menu.description}}</p>
+									{% endif %}
+								{% endfor %}
+								<p>Price: {{item.price}} rub</p>
+								{% if item.comment %}
+									<p>Comment: {{item.comment}}</p>
+								{% endif %}
+								<h4>
+									<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{item.menu_item_id}}/edit">Edit menu item at {{rest_item.name}}</a>
+									<br>
+									<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{item.menu_item_id}}/delete">Delete menu item from {{rest_item.name}}</a>
+								</h4>
+								<br>
+							{% endfor %}
+						{% else %}
+							<h3> No menu list yet, come back later... </h3>
+						{% endif %}
+					</div>
+            </div>
+		</div>
+	</section>
+
+	<footer>
+		<p>--- start of footer ---</p>
+		<div class="vertical-centerer flex-container">
+		  	<div class="flex-container space-between header-content">
+ 				<div>
+			  		<ul class="menu">
+                        <li>
+							<a href="/restaurants">Back to restaurants</a>
+						</li>
+						<li>
+							<a href="/restaurants/rst_id{{rest_item.id}}/add">Add menu item to {{rest_item.name}}</a>
+						</li>
+						<li>Reserved</li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li>Contact us</li>
+			  		</ul>
+				</div>
+		  	</div>
+		</div>
+		<p>--- end of footer ---</p>
+	</footer>
+
+</body>
+</html>

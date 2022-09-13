@@ -1,6 +1,5 @@
 /server_back
-/templates
-/static
+/templates/templates_test
 
 database/README.txt
 database/__pycache__
