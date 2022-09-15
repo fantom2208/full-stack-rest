@@ -51,18 +51,18 @@
 							<!-- form to load edit menu item form -->
 							<form action="{{ url_for('add_menu_item_to_restaurant_id', 
 											 rst_id = 'rst_id' ~ rest_item.id)}}" method = 'get'>
-								<input type='submit' name="open_add_form" value="Add new item to '{{rest_item.name}}'">
+								<input type='submit' value="Add new item to '{{rest_item.name}}'">
 							</form>
 
 							<!-- form to load edit menu item form -->
 							<form action="{{ url_for('edit_restaurant_id', 
 										 	 rst_id = 'rst_id' ~ rest_item.id)}}" method = 'get'>
-								<input type='submit' name="open_edit_form" value="Edit '{{rest_item.name}}' info">
+								<input type='submit' value="Edit '{{rest_item.name}}' info">
 							</form>
 							<!-- form to load delete menu item form -->
 							<form action="{{ url_for('delete_restaurant_id', 
 											 rst_id = 'rst_id' ~ rest_item.id)}}" method = 'get'>
-								<input type='submit' name="open_delete_form" value="Delete '{{rest_item.name}}' and its menu">
+								<input type='submit' value="Delete '{{rest_item.name}}' and its menu">
 							</form>
 						</h4>
 						<h1>Our menu:</h1>
@@ -90,20 +90,20 @@
 									<form action="{{ url_for('edit_menu_item_for_restaurant_id', 
 													 rst_id = 'rst_id' ~ rest_item.id, 
 													 mnu_id = 'mnu_id' ~ item.menu_item_id)}}" method = 'get'>
-										<input type='submit' name="open_edit_form" value="Edit price and comment">
+										<input type='submit' value="Edit price and comment">
 									</form>
 									<!-- form to load delete menu item form -->
 									<form action="{{ url_for('delete_menu_item_for_restaurant_id', 
 													 rst_id = 'rst_id' ~ rest_item.id, 
 													 mnu_id = 'mnu_id' ~ item.menu_item_id)}}" method = 'get'>
-										<input type='submit' name="open_delete_form" value="Delete item from '{{rest_item.name}}'">
+										<input type='submit' value="Delete item from '{{rest_item.name}}'">
 									</form>
 
 								</h4>
 								<br>
 							{% endfor %}
 						{% else %}
-							<h3> No menu list yet, come back later... </h3>
+							<h3> No menu list yet... </h3>
 						{% endif %}
 					</div>
             </div>

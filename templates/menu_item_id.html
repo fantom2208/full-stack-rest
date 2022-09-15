@@ -62,21 +62,21 @@
 					<!-- form to load previous page -->
 					{% if rest_item %}	
 						<form action="{{ url_for('restaurant_id', rst_id = 'rst_id' ~ rest_item.id)}}" method = 'get'>
-							<input type='submit' name="open_restraurant_id" value="Back to '{{rest_item.name}}'">
+							<input type='submit' value="Back to '{{rest_item.name}}'">
 						</form>
 					{% else %}
 						<form action="{{ url_for('menu_items')}}" method = 'get'>
-							<input type='submit' name="open_menu_items" value="Back to all menu items">
+							<input type='submit' value="Back to all menu items">
 						</form>
 					{% endif %}	
 
 					<!-- form to load edit menu item form -->
 					<form action="{{ url_for('edit_menu_item_id', mnu_id = 'mnu_id' ~ menu_item.id)}}" method = 'get'>
-						<input type='submit' name="open_edit_form" value="Edit item">
+						<input type='submit' value="Edit item">
 					</form>
 					<!-- form to load delete menu item form -->
 					<form action="{{ url_for('delete_menu_item_id', mnu_id = 'mnu_id' ~ menu_item.id)}}" method = 'get'>
-						<input type='submit' name="open_delete_form" value="Delete item">
+						<input type='submit' value="Delete item">
 					</form>
 					<br>
 					

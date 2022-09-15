@@ -137,14 +137,14 @@ def restaurants():
 # 1.1. Routing to add restaurant into list
 @app.route('/restaurants/add', methods=['GET', 'POST'])
 def add_restaurant():
+    # GET method - to send form
     if request.method == 'GET':
-        return '1.1. Returning form to add new restaurant... '
+        return '1.1*. Returning form to add new restaurant... '
 
-    #if request.method == 'POST':
-    #    if request.form.get('open_add_form',0):  
-    #        return '1.1. Returning form to add new restaurant... '
+    # POST method - to recieve data and add to DB
+    if request.method == 'POST':
+        return '1.1*. Redirecting to page with all restaurants...'     
 
-    return '1.1. Unknown responce'
 
 # 2. Routing for restaurant info and list of its menu items
 # parametrs:
