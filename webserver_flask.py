@@ -139,11 +139,29 @@ def restaurants():
 def add_restaurant():
     # GET method - to send form
     if request.method == 'GET':
-        return '1.1*. Returning form to add new restaurant... '
+        return render_template('add_restaurant.html')
+        # return '1.1*. Returning form to add new restaurant... 
 
     # POST method - to recieve data and add to DB
     if request.method == 'POST':
-        return '1.1*. Redirecting to page with all restaurants...'     
+        # add_button pressed - add to DB
+        if request.form.get('add_button',0):
+            new_restaurant = {'name' : request.form['name'], 
+                              'description' : request.form['description'], 
+                              'address' : request.form['address'], 
+                              'id' : len(restaurant_lst) + 1}
+
+            restaurant_lst.append(new_restaurant)
+	        # new_menu_item = MenuItem(name = request.form['name'], description = request.form['description'], price = request.form['price'], course = request.form['course'], restaurant_id = restaurant_id)
+            # session.add(newItem)
+	        # session.commit()
+            return redirect(url_for('restaurant_id', rst_id = 'rst_id{}'.format(new_restaurant['id']) ))
+            # return '1.1*. Redirecting to page with new restaurant...  
+
+        # cancel_button pressed - redirect to menu items page
+        if request.form.get('cancel_button',0):
+            return redirect(url_for('restaurants'))
+            # return '1.1*. Redirecting to page with all restaurants...     
 
 
 # 2. Routing for restaurant info and list of its menu items
@@ -191,16 +209,80 @@ def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
 # 2.4. Routing to edit restaurant info
 # parametrs:
 #  - rst_id is path, syntax: rst_idNN where id = NN
-@app.route('/restaurants/<string:rst_id>/edit')
+@app.route('/restaurants/<string:rst_id>/edit', methods=['GET', 'POST'])
 def edit_restaurant_id(rst_id):
-    return '2.4. Returning form to edit reataurant with id: ' + rst_id[6:]
+    if request.method == 'GET':
+        #get menu item id value
+        rst_id_val = int(rst_id[6:])    
+        rst_itm = query_restaurants(rst_id_val)
+        return render_template('edit_restaurant_id.html',  rest = rst_itm )
+        #return '2.4. Returning form to edit reataurant with id: ' + rst_id[6:]
+
+    if request.method == 'POST':
+        if request.form.get('submit_button',0):
+            #get menu item id value
+            rst_id_val = int(rst_id[6:])
+
+            rst_itm = query_restaurants(rst_id_val)
+            rst_itm_idx = restaurant_lst.index(rst_itm)
+
+            if request.form['name']:
+                restaurant_lst[rst_itm_idx]['name'] = request.form['name']
+            if request.form['description']:
+                restaurant_lst[rst_itm_idx]['description'] = request.form['description']
+            if request.form['address']:
+                restaurant_lst[rst_itm_idx]['address'] = request.form['address']  
+                       
+            return redirect(url_for('restaurant_id', rst_id = rst_id ))
+            #  return '2.4*. Redirecting to page with restaurant id: ' + rst_id[6:] 
+        
+        if request.form.get('cancel_button',0):
+            return redirect(url_for('restaurant_id', rst_id = rst_id ))
+            # return '2.4*. Redirecting to page with restaurant id: ' + rst_id[6:]  
+
 
 # 2.5. Routing to delete restaurant info
 # parametrs:
 #  - rst_id is path, syntax: rst_idNN where id = NN
-@app.route('/restaurants/<string:rst_id>/delete')
+@app.route('/restaurants/<string:rst_id>/delete', methods=['GET', 'POST'])
 def delete_restaurant_id(rst_id):
-    return '2.5. Returning form to delete reataurant with id: ' + rst_id[6:]
+    if request.method == 'GET':
+        #get menu item id value
+        rst_id_val = int(rst_id[6:])    
+        rst_itm = query_restaurants(rst_id_val)
+
+        # get menu item quantity for specific restaurant
+        rest_menu_items = query_list_rest_menu_items_by_rst(rst_id_val)
+
+        return render_template('delete_restaurant_id.html',  rest = rst_itm, 
+                                mnu_itms_qnt = len(rest_menu_items))
+        #return '2.5. Returning form to delete reataurant with id: ' + rst_id[6:]
+    
+    if request.method == 'POST':
+        if request.form.get('delete_button',0):
+            #get menu item id value
+            rst_id_val = int(rst_id[6:]) 
+
+            # delete all records from RestMenuItem table
+            idx = 0
+            while idx < len(rest_menu_item_lst):
+                if rest_menu_item_lst[idx]['restaurant_id'] == rst_id_val:
+                    # print('------\n', rest_menu_item_lst[idx])
+                    rest_menu_item_lst.pop(idx)
+                else:
+                    idx += 1
+
+            rst_itm = query_restaurants(rst_id_val)
+            rst_itm_idx = restaurant_lst.index(rst_itm)
+            restaurant_lst.pop(rst_itm_idx)
+            return redirect(url_for('restaurants'))
+            # return '3.2*. Redirecting to page with all restaurantss...
+
+        if request.form.get('cancel_button',0):
+            return redirect(url_for('restaurant_id', rst_id = rst_id ))
+            # return '2.5*. Redirecting to page with restaurant id: ' + rst_id[6:]
+    
+    
 
 # 2.6*. Routing to filter restaurant menu items by cource type
 # parametrs:
@@ -292,11 +374,13 @@ def delete_menu_item_id(mnu_id):
             #get menu item id value
             mnu_id_val = int(mnu_id[6:])
             # delete all records from RestMenuItem table
-            for item in rest_menu_item_lst:
-                if item['menu_item_id'] == mnu_id_val:
-                    print(item)
-                    idx = rest_menu_item_lst.index(item)
+            idx = 0
+            while idx < len(rest_menu_item_lst):
+                if rest_menu_item_lst[idx]['menu_item_id'] == mnu_id_val:
+                    # print('------\n', rest_menu_item_lst[idx])
                     rest_menu_item_lst.pop(idx)
+                else:
+                    idx += 1
 
             mnu_itm = query_menu_items(mnu_id_val)
             mnu_itm_idx = menu_item_lst.index(mnu_itm)
