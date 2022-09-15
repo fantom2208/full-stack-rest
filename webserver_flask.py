@@ -135,9 +135,16 @@ def restaurants():
     # return '1. Returning list of all restaurants... '
 
 # 1.1. Routing to add restaurant into list
-@app.route('/restaurants/add')
+@app.route('/restaurants/add', methods=['GET', 'POST'])
 def add_restaurant():
-    return '1.1. Returning form to add new restaurant... '
+    if request.method == 'GET':
+        return '1.1. Returning form to add new restaurant... '
+
+    #if request.method == 'POST':
+    #    if request.form.get('open_add_form',0):  
+    #        return '1.1. Returning form to add new restaurant... '
+
+    return '1.1. Unknown responce'
 
 # 2. Routing for restaurant info and list of its menu items
 # parametrs:
@@ -222,10 +229,6 @@ def menu_item_id(mnu_id, rst_id=None):
     return render_template('menu_item_id.html', menu_item = mnu_itm,
                             rest_item = restaurant)
     # return '3*. Returning menu item parameters with id: ' + mnu_id[6:]
-
-
-
-
 
 # 3.1*. Routing to edit specific menu item info
 # parametrs:
@@ -313,14 +316,17 @@ def menu_items():
     # return '4*. Returning list of all menu items...  '
 
 
-# 4.1*. Routing for GET method to add new menu item
+# 4.1*. Routing to add new menu item
 @app.route('/restaurants/menu_items/add', methods=['GET', 'POST'])
 def add_menu_item():
+    # GET method - to send form
     if request.method == 'GET':
         return render_template('add_menu_item.html')
         # return '4.1*. Returning form to add new menu item... 
 
+    # POST method - to recieve data and add to DB
     if request.method == 'POST':
+        # add_button pressed - add to DB
         if request.form.get('add_button',0):
             new_menu_item = {'name' : request.form['name'], 
                              'description' : request.form['description'], 
@@ -336,9 +342,22 @@ def add_menu_item():
             return redirect(url_for('menu_items'))
             # return '4.1*. Redirecting to page with menu item...  
 
+        # cancel_button pressed - redirect to menu items page
         if request.form.get('cancel_button',0):
             return redirect(url_for('menu_items'))
             # return '4.1*. Redirecting to page with menu item...     
+
+# 5*. Routing to show 'News & Promo' page
+@app.route('/restaurants/news_promo')
+def news_promo():
+    return '5*. Returning list of promo menu items... \
+            (with not NULL comments at RestMenuItem table)  '
+
+# 6*. Routing to show 'Contact us' page
+@app.route('/restaurants/contact_us')
+def contact_us():
+    return '6*. Returning page with contacts info... '
+
         
 # if mani module to execute
 if __name__ == '__main__':

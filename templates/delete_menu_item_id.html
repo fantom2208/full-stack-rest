@@ -24,8 +24,8 @@
 				<div>
 			  		<ul class="menu">
 						<li><a href="/restaurants/">Restaurants</a></li>
-						<li><a href="/restaurants/menu_items/">All Menu</a></li>
-						<li>News & Promo</li>
+						<li><a href="/restaurants/menu_items/">All Menu items</a></li>
+						<li><a href="/restaurants/news_promo">News & Promo</a></li>
 			  		</ul>
 				</div>
 		  	</div>
@@ -37,11 +37,15 @@
 		<div class="container">
 			<div class="portfolio">
 				<h1>{{menu_item.name}}</h1>
-				<p>{{menu_item.name}} is in menu of following restarunts: </p>
-				{% for rest in rest_lst%}
-					<p> - {{rest.name}}</p>
-				{% endfor %}
-				<br>
+				{% if rest_lst %}
+					<p>{{menu_item.name}} is used in menu of following restarunts: </p>
+					{% for rest in rest_lst%}
+						<p> - {{rest.name}}</p>
+					{% endfor %}
+					<p> It will be deleted from restaurants and list of menu items </p>
+				{% else %}
+					<p>{{menu_item.name}} will be deleted from list of menu items </p>
+				{% endif %}
 				<h3> Are you sure you want to delete {{menu_item.name}}? </h3>
      			<form action="{{ url_for('delete_menu_item_id', mnu_id = 'mnu_id' ~ menu_item.id)}}" method = 'post'>
 					<input type='submit' name="delete_button" value='Delete menu item'>
@@ -57,6 +61,7 @@
 		  	<div class="flex-container space-between header-content">
  				<div>
 			  		<ul class="menu">
+						<!--
                         <li>
 							<a href="/restaurants/">Back to restaurants</a>
 						</li>
@@ -69,7 +74,8 @@
 						<li> </li>
 						<li> </li>
 						<li> </li>
-						<li>Contact us</li>
+						-->
+						<li><a href="/restaurants/contact_us">Contact us</a></li>
 			  		</ul>
 				</div>
 		  	</div>

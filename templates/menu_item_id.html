@@ -24,8 +24,8 @@
 				<div>
 			  		<ul class="menu">
 						<li><a href="/restaurants/">Restaurants</a></li>
-						<li><a href="/restaurants/menu_items/">All Menu</a></li>
-						<li>News & Promo</li>
+						<li><a href="/restaurants/menu_items/">All Menu items</a></li>
+						<li><a href="/restaurants/news_promo">News & Promo</a></li>
 			  		</ul>
 				</div>
 		  	</div>
@@ -38,9 +38,9 @@
 			<div class="portfolio">
 				<h1>{{menu_item.name}}</h1>
                 <p> 
-					<span> {{menu_item.description}} </span>
+					<span> Description: {{menu_item.description}} </span>
 				</p>
-				<p> {{menu_item.course}} </p>
+				<p> Cource: {{menu_item.course}} </p>
 				{% if menu_item.weight %}
 					<p> Dish weight: {{menu_item.weight}} gr.</p>
 				{% endif %}
@@ -48,13 +48,38 @@
 					<p> Content: {{menu_item.content}} </p>
 				{% endif %}
 				<h4>
+					<!--
 					<a href="/restaurants/menu_items/mnu_id{{menu_item.id}}/edit">Edit {{menu_item.name}} info</a>
 					<br>
 					<a href="/restaurants/menu_items/mnu_id{{menu_item.id}}/delete">Delete {{menu_item.name}} from all restaurants</a>
-					{% if rest_item %}
-						<br><br>
+					{% if rest_item %}						
 						<a href="/restaurants/rst_id{{rest_item.id}}/">Back to {{rest_item.name}}</a>
-					{% endif %}
+					{% else %}
+						<a href="/restaurants/menu_items/">Back to all menu items</a>
+					{% endif %}				
+					-->
+
+					<!-- form to load previous page -->
+					{% if rest_item %}	
+						<form action="{{ url_for('restaurant_id', rst_id = 'rst_id' ~ rest_item.id)}}" method = 'get'>
+							<input type='submit' name="open_restraurant_id" value="Back to '{{rest_item.name}}'">
+						</form>
+					{% else %}
+						<form action="{{ url_for('menu_items')}}" method = 'get'>
+							<input type='submit' name="open_menu_items" value="Back to all menu items">
+						</form>
+					{% endif %}	
+
+					<!-- form to load edit menu item form -->
+					<form action="{{ url_for('edit_menu_item_id', mnu_id = 'mnu_id' ~ menu_item.id)}}" method = 'get'>
+						<input type='submit' name="open_edit_form" value="Edit item">
+					</form>
+					<!-- form to load delete menu item form -->
+					<form action="{{ url_for('delete_menu_item_id', mnu_id = 'mnu_id' ~ menu_item.id)}}" method = 'get'>
+						<input type='submit' name="open_delete_form" value="Delete item">
+					</form>
+					<br>
+					
 				</h4> 
             </div>
 		</div>
@@ -66,6 +91,7 @@
 		  	<div class="flex-container space-between header-content">
  				<div>
 			  		<ul class="menu">
+						<!--
                         <li>
 							<a href="/restaurants/">Back to restaurants</a>
 						</li>
@@ -78,7 +104,8 @@
 						<li> </li>
 						<li> </li>
 						<li> </li>
-						<li>Contact us</li>
+						-->
+						<li><a href="/restaurants/contact_us">Contact us</a></li>
 			  		</ul>
 				</div>
 		  	</div>

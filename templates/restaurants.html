@@ -24,8 +24,8 @@
 				<div>
 			  		<ul class="menu">
 						<li><a href="/restaurants">Restaurants</a></li>
-						<li><a href="/restaurants/menu_items">All Menu</a></li>
-						<li>News & Promo</li>
+						<li><a href="/restaurants/menu_items">All Menu items</a></li>
+						<li><a href="/restaurants/news_promo">News & Promo</a></li>
 			  		</ul>
 				</div>
 		  	</div>
@@ -49,6 +49,11 @@
 				    </div>
 				{% endfor %}
             </div>
+			
+			<!-- form to load add restaurant form -->
+			<form action="{{ url_for('add_restaurant')}}" method = 'get'>
+				<input type='submit' name="open_add_form" value='Add new restaurant'>
+			</form>
 		</div>
 	</section>
 
@@ -58,6 +63,7 @@
 		  	<div class="flex-container space-between header-content">
  				<div>
 			  		<ul class="menu">
+						<!--
                         <li>
 							<a href="/restaurants/add">Add new restaurant</a>
 						</li>
@@ -70,7 +76,8 @@
 						<li> </li>
 						<li> </li>
 						<li> </li>
-						<li>Contact us</li>
+						-->
+						<li><a href="/restaurants/contact_us">Contact us</a></li>
 			  		</ul>
 				</div>
 		  	</div>
