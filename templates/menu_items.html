@@ -36,33 +36,67 @@
 	<section>
 		<div class="container">
 			<div class="portfolio">
-				<h1>List of all menu items:</h1>
-                {% for item in menu_items %}
-					<div class="item div_post">
-					    <h2>
-							<a href="/restaurants/menu_items/mnu_id{{item.id}}">{{item.name}}</a> 
-						</h2>
-					    <p>
-							<span> {{item.description}} </span>
-						</p>
-						<!--
-					    <p> {{item.course}} </p>
-						{% if item.weight %}
-							<p> Dish weight: {{item.weight}} gr.</p>
-						{% endif %}
-						{% if item.content %}
-							<p> Content: {{item.content}} </p>
-						{% endif %}
-						-->
-						<br><br>
-				    </div>
-				{% endfor %}
-            </div>
+				{% if menu_items %}
+					{% if rest %}
+						<h1>Select menu items to add to '{{rest.name}}' restaurant:</h1>
+					{% else %}
+						<h1>List of all menu items:</h1>
+					{% endif %}
+					{% for item in menu_items %}
+						<div class="item div_post">
+							{% if rest %}
+								<h2>{{item.id}}. {{item.name}}</h2>
+								<p>
+									<span> {{item.description}} </span>
+								</p>
+								
+								<!-- form to load add menu item to rataurant form -->
+								<form action="{{ url_for('add_menu_item_to_restaurant_id', 
+												rst_id = 'rst_id' ~ rest.id,
+												mnu_id = 'mnu_id' ~ item.id )}}" method = 'get'>
+									<input type='submit' value='Add restaurant menu'>
+								</form>
+							{% else %}
+								<h2>
+									<a href="/restaurants/menu_items/mnu_id{{item.id}}">{{item.id}}. {{item.name}}</a> 
+								</h2>
+								<p>
+									<span> {{item.description}} </span>
+								</p>
+							{% endif %}							
+							
+							<!--
+							<p> {{item.course}} </p>
+							{% if item.weight %}
+								<p> Dish weight: {{item.weight}} gr.</p>
+							{% endif %}
+							{% if item.content %}
+								<p> Content: {{item.content}} </p>
+							{% endif %}
+							-->
+							<br><br>
+						</div>
+					{% endfor %}
+				{% else %}
+					<!-- form to cancell add new menu item  becouse all already existed -->
+					<h4>All items already existed in '{{rest.name}}' restaurant. </h4>
+					<form action="{{ url_for('restaurant_id', 
+									 rst_id = 'rst_id' ~ rest.id)}}" method = 'get'>
+						<input type='submit' value='Cancel'>
+					</form>
 
-			<!-- form to load add new menu item form -->
-			<form action="{{ url_for('add_menu_item')}}" method = 'get'>
-				<input type='submit' value='Add new menu item'>
-			</form>
+				{% endif %}	
+				</div>
+
+			{% if rest %}
+				<br>
+			{% else %}
+				<!-- form to load add new menu item form -->
+				<form action="{{ url_for('add_menu_item')}}" method = 'get'>
+					<input type='submit' value='Add new menu item'>
+				</form>
+			{% endif %}	
+
 		</div>
 	</section>
 

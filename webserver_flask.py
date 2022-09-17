@@ -98,6 +98,14 @@ def query_menu_items(mnu_id):
         if item['id'] == mnu_id:
             return item
 
+# dummy function to simulate query of getting rest_menu_item by 
+# restaurant id and menu_item_id
+def query_rest_menu_items(rest_id, mnu_id):
+    for item in rest_menu_item_lst:
+        if item['restaurant_id'] == rest_id and \
+           item['menu_item_id'] == mnu_id:
+            return item
+
 # dummy function to simulate query of getting menu item by menu item id list
 def query_list_menu_items(rst_mnu_itms):
     query_list = []
@@ -184,27 +192,134 @@ def restaurant_id(rst_id):
 # 2.1. Routing to add menu item to specific restaurant
 # parametrs:
 #  - rst_id is path, syntax: rst_idNN where id = NN
-@app.route('/restaurants/<string:rst_id>/add')
-def add_menu_item_to_restaurant_id(rst_id):
-    return '2.1. Returning form to add new menu item to specific restaurant id: ' + rst_id[6:]
+@app.route('/restaurants/<string:rst_id>/<string:mnu_id>/add', methods=['GET', 'POST'])
+def add_menu_item_to_restaurant_id(rst_id, mnu_id):
+    # GET method - to send form
+    if request.method == 'GET':
+        #get restaurant id value
+        rst_id_val = int(rst_id[6:])
+        restaurant = query_restaurants(rst_id_val)
+
+        #get menu item id value
+        mnu_id_val = int(mnu_id[6:])
+        mnu_itm = query_menu_items(mnu_id_val)
+
+        return render_template('add_menu_item_to_restaurant_id.html',
+                                rest = restaurant, item = mnu_itm )
+        # return '2.1. Returning form to add menu item: ' + mnu_id[6:] + \
+        #         ' to specific restaurant id: ' + rst_id[6:]
+    
+    if request.method == 'POST':
+        # add_button pressed - add to DB
+        if request.form.get('add_button',0):
+            #get restaurant id value
+            rst_id_val = int(rst_id[6:])
+            #get menu item id value
+            mnu_id_val = int(mnu_id[6:])
+
+            new_rest_item = {'restaurant_id' : rst_id_val, 
+                             'menu_item_id' : mnu_id_val, 
+                             'price' : int(request.form['price']), 
+                             'comment' : request.form['comment'], 
+                             'id' : len(rest_menu_item_lst) + 1}
+
+            rest_menu_item_lst.append(new_rest_item)
+
+            return redirect(url_for('restaurant_id', rst_id = rst_id))
+            # return '2.1.Redirectingto to specific restaurant id: ' + rst_id[6:]
+       
+        # cancel_button pressed - redirect to menu items page
+        if request.form.get('cancel_button',0):
+            return redirect(url_for('restaurant_id', rst_id = rst_id))
+            # return '2.1.Redirectingto to specific restaurant id: ' + rst_id[6:]
 
 # 2.2. Routing to edit menu item id for specific restaurant
 # parametrs:
 #  - rst_id is path, syntax: rst_idNN where id = NN
 #  - mnu_id is path, syntax: mnu_idMM where id = MM
-@app.route('/restaurants/<string:rst_id>/<string:mnu_id>/edit')
+@app.route('/restaurants/<string:rst_id>/<string:mnu_id>/edit', methods=['GET', 'POST'])
 def edit_menu_item_for_restaurant_id(rst_id, mnu_id):
-    return '2.2. Returning form to edit menu item with id: ' + mnu_id[6:] + \
-           ' for  specific restaurant id: ' + rst_id[6:]
+    # GET method - to send form
+    if request.method == 'GET':
+        #get restaurant id value
+        rst_id_val = int(rst_id[6:])
+        restaurant = query_restaurants(rst_id_val)
+
+        #get menu item id value
+        mnu_id_val = int(mnu_id[6:])
+        mnu_itm = query_menu_items(mnu_id_val)
+
+        rst_itm = query_rest_menu_items(rst_id_val, mnu_id_val)
+
+        return render_template('edit_menu_item_for_restaurant_id.html',
+                                rest = restaurant, item = mnu_itm, rest_item = rst_itm )
+        # return '2.2. Returning form to edit menu item with id: ' + mnu_id[6:] + \
+        #        ' for  specific restaurant id: ' + rst_id[6:]
+
+    if request.method == 'POST':
+        # add_button pressed - add to DB
+        if request.form.get('submit_button',0):
+            #get restaurant id value
+            rst_id_val = int(rst_id[6:])
+            #get menu item id value
+            mnu_id_val = int(mnu_id[6:])
+
+            rst_itm = query_rest_menu_items(rst_id_val, mnu_id_val)
+            rst_itm_idx = rest_menu_item_lst.index(rst_itm)
+
+            if request.form['price']:
+                rest_menu_item_lst[rst_itm_idx]['price'] = request.form['price']
+            if request.form['comment']:
+                rest_menu_item_lst[rst_itm_idx]['comment'] = request.form['comment']
+
+            return redirect(url_for('restaurant_id', rst_id = rst_id ))
+            # return '2.2*. Redirecting to page with restaurant id: ' + rst_id[6:]
+
+        if request.form.get('cancel_button',0):
+            return redirect(url_for('restaurant_id', rst_id = rst_id ))
+            # return '2.2*. Redirecting to page with restaurant id: ' + rst_id[6:]
+
 
 # 2.3. Routing to delete menu item id for specific restaurant
 # parametrs:
 #  - rst_id is path, syntax: rst_idNN where id = NN
 #  - mnu_id is path, syntax: mnu_idMM where id = MM
-@app.route('/restaurants/<string:rst_id>/<string:mnu_id>/delete')
+@app.route('/restaurants/<string:rst_id>/<string:mnu_id>/delete', methods=['GET', 'POST'])
 def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
-    return '2.3. Returning form to delete menu item with id: ' + mnu_id[6:] + \
-           ' for  specific restaurant id: ' + rst_id[6:]
+    # GET method - to send form
+    if request.method == 'GET':
+        #get restaurant id value
+        rst_id_val = int(rst_id[6:])
+        restaurant = query_restaurants(rst_id_val)
+
+        #get menu item id value
+        mnu_id_val = int(mnu_id[6:])
+        mnu_itm = query_menu_items(mnu_id_val)
+
+        return render_template('delete_menu_item_for_restaurant_id.html',
+                                rest = restaurant, item = mnu_itm )
+        # return '2.3. Returning form to delete menu item with id: ' + mnu_id[6:] + \
+        #        ' for  specific restaurant id: ' + rst_id[6:]
+
+    if request.method == 'POST':
+        # add_button pressed - add to DB
+        if request.form.get('delete_button',0):
+            #get restaurant id value
+            rst_id_val = int(rst_id[6:])
+            #get menu item id value
+            mnu_id_val = int(mnu_id[6:])
+
+            rst_itm = query_rest_menu_items(rst_id_val, mnu_id_val)
+            rst_itm_idx = rest_menu_item_lst.index(rst_itm)
+            rest_menu_item_lst.pop(rst_itm_idx)
+            
+            return redirect(url_for('restaurant_id', rst_id = rst_id ))
+            # return '2.3*. Redirecting to page with restaurant id: ' + rst_id[6:]
+
+        if request.form.get('cancel_button',0):
+            return redirect(url_for('restaurant_id', rst_id = rst_id ))
+            # return '2.3*. Redirecting to page with restaurant id: ' + rst_id[6:]
+    
 
 # 2.4. Routing to edit restaurant info
 # parametrs:
@@ -395,8 +510,33 @@ def delete_menu_item_id(mnu_id):
 
 # 4*. Routing for list of all menu items
 @app.route('/restaurants/menu_items/')
-def menu_items():
-    return render_template('menu_items.html', menu_items = menu_item_lst)
+@app.route('/restaurants/menu_items/<string:rst_id>/add')
+def menu_items(rst_id = None):
+
+    # adding not existed menu items to restaurant
+    if rst_id:  
+        #get menu item id value
+        rst_id_val = int(rst_id[6:])    
+        rst_itm = query_restaurants(rst_id_val)
+        # get already existed menu items for specific restaurant
+        rest_menu_items = query_list_rest_menu_items_by_rst(rst_id_val)
+        ftrd_menu_items = query_list_menu_items(rest_menu_items)
+
+        # select only not existed menu items
+        ne_menu_item_lst = []
+        for item in menu_item_lst:
+            if item in ftrd_menu_items:
+                continue                        # skip item
+            else:
+                ne_menu_item_lst.append(item)   # add to list
+        
+        return render_template('menu_items.html', menu_items = ne_menu_item_lst,
+                                rest = rst_itm)
+    # show all menu items 
+    else:
+        rst_itm = None
+        return render_template('menu_items.html', menu_items = menu_item_lst,
+                                rest = rst_itm)
     # return '4*. Returning list of all menu items...  '
 
 
