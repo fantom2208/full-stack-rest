@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+  	<title>Nice food restaurants</title>
+	<!--
+	<link href={{ url_for('static', filename='styles.css') }} rel=stylesheet>
+	-->
+</head>
+<body>
+	<header>
+		<p>--- start of header ---</p>
+		<div class="vertical-centerer flex-container">
+		  	<div class="flex-container space-between header-content">
+				<div>
+			  		<span>
+						<img class="logo" src={{url_for('static', filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<div class="logo_name">
+							<h2>Eat and Rest</h2>
+						</div>
+			  		</span>
+				</div>
+				<div>
+			  		<ul class="menu">
+						<li><a href="/restaurants">Restaurants</a></li>
+						<li><a href="/restaurants/menu_items">All Menu items</a></li>
+						<li><a href="/restaurants/news_promo">News & Promo</a></li>
+			  		</ul>
+				</div>
+		  	</div>
+		</div>
+		<p>--- end of header ---</p>
+	</header>
+
+	<section>
+		<div class="container">
+			<div class="portfolio">
+				<h1>Our coordinates:</h1>
+				<div class="item div_post">
+					<p>Russia, Kaluga, Kirova str, 57 office 3</p>
+					<p>tel: +7(4842)70-71-72</p>
+					
+					<iframe src="https://yandex.ru/map-widget/v1/?lang=ru_RU&amp;scroll=true&amp;um=constructor%3Adb2eb221f7d67dfc31a873e9eaca7dc9dca2fa4cd35e54879a5364b7ab3d9097" 
+							frameborder="0" allowfullscreen="true" width="50%" height="400px" style="display: block;"></iframe>
+					
+					<p>Working schedule:</p>
+					<ul>
+						<li>Mo: 09:00 - 21:00</li>
+						<li>Tu: 09:00 - 21:00</li>
+						<li>We: 09:00 - 21:00</li>
+						<li>Th: 09:00 - 21:00</li>
+						<li>Fr: 09:00 - 18:00</li>
+						<li>St: 09:00 - 15:00</li>
+						<li>Su: closed</li>
+					</ul>
+							
+				</div>
+            </div>
+		</div>
+	</section>
+
+	<footer>
+		<p>--- start of footer ---</p>
+		<div class="vertical-centerer flex-container">
+		  	<div class="flex-container space-between header-content">
+ 				<div>
+			  		<ul class="menu">
+						<!--
+                        <li>
+							<a href="/restaurants">Back to restaurants</a>
+						</li>
+						<li>
+							<a href="/restaurants/menu_items/">Back to all menu items</a>
+						</li>
+						<li>Reserved</li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						<li> </li>
+						-->
+						<li><a href="/restaurants/contact_us">Contact us</a></li>
+			  		</ul>
+				</div>
+		  	</div>
+		</div>
+		<p>--- end of footer ---</p>
+	</footer>
+
+</body>
+</html>

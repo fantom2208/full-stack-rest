@@ -112,7 +112,25 @@ def query_list_menu_items(rst_mnu_itms):
     for item in rst_mnu_itms:
         for memu in menu_item_lst:
             if memu['id'] == item['menu_item_id']:
-                query_list.append(memu)
+                # if menu item not included yet - add to list
+                if memu in query_list:
+                    continue
+                else:
+                    query_list.append(memu)
+                # print(memu)
+    return query_list
+
+# dummy function to simulate query of getting restaurant by menu item id list
+def query_list_restaurants(rst_mnu_itms):
+    query_list = []
+    for item in rst_mnu_itms:
+        for rest in restaurant_lst:
+            if rest['id'] == item['restaurant_id']:
+                # if menu item not included yet - add to list
+                if rest in query_list:
+                    continue
+                else:
+                    query_list.append(rest)
                 # print(memu)
     return query_list
 
@@ -574,13 +592,26 @@ def add_menu_item():
 # 5*. Routing to show 'News & Promo' page
 @app.route('/restaurants/news_promo')
 def news_promo():
-    return '5*. Returning list of promo menu items... \
-            (with not NULL comments at RestMenuItem table)  '
+    np_rest_menu_item_lst = []
+    for item in rest_menu_item_lst:
+        if item['comment']:
+            np_rest_menu_item_lst.append(item)
+
+    np_menu_item_lst = query_list_menu_items(np_rest_menu_item_lst)
+    np_restaurant_lst = query_list_restaurants(np_rest_menu_item_lst)
+
+    return render_template('news_promo.html', rest_lst = np_restaurant_lst,
+                           mnu_itms = np_menu_item_lst, 
+                           mnu_itm_prs = np_rest_menu_item_lst)
+
+    # return '5*. Returning list of promo menu items... \
+    #         (with not NULL comments at RestMenuItem table)  '
 
 # 6*. Routing to show 'Contact us' page
 @app.route('/restaurants/contact_us')
 def contact_us():
-    return '6*. Returning page with contacts info... '
+    return render_template('contact_us.html')
+    # return '6*. Returning page with contacts info... '
 
         
 # if mani module to execute
