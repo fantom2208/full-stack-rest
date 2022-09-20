@@ -38,30 +38,34 @@
 			<div class="portfolio">
 				<h1>News and promo menu:</h1>
 				<div class="item div_post">
-					{% for rest_item in rest_lst %}    
-						<img src={{url_for('static', filename = rest_item.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg' )}} width="120" alt="Restaurant logo">
-						<!--
-						<br>
-						<span> {{rest_item.description}} </span>
-						<p> {{rest_item.address}} </p>
-						-->						
-						{% for menu in mnu_itms %}
-							{% for item in mnu_itm_prs %}
-								{% if menu.id == item.menu_item_id and  
-									rest_item.id == item.restaurant_id  %}
-										<h3>{{menu.name}}</h3>
-										<!--
-										<p>{{menu.description}}</p>
-										
-										<p>Price: {{item.price}} rub</p>
-										-->
-										<p>Promo: {{item.comment}}</p>
-								{% endif %}
+					{% if rest_lst %}
+						{% for rest_item in rest_lst %}    
+							<img src={{url_for('static', filename = rest_item.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg' )}} width="120" alt="Restaurant logo">
+							<!--
+							<br>
+							<span> {{rest_item.description}} </span>
+							<p> {{rest_item.address}} </p>
+							-->						
+							{% for menu in mnu_itms %}
+								{% for item in mnu_itm_prs %}
+									{% if menu.id == item.menu_item_id and  
+										rest_item.id == item.restaurant_id  %}
+											<h3>{{menu.name}}</h3>
+											<!--
+											<p>{{menu.description}}</p>
+											
+											<p>Price: {{item.price}} rub</p>
+											-->
+											<p>Promo: {{item.comment}}</p>
+									{% endif %}
+								{% endfor %}
 							{% endfor %}
+							<h4> <a href="/restaurants/rst_id{{rest_item.id}}">Visit us now!!!</a></h4>	
+							<br>							
 						{% endfor %}
-						<h4> <a href="/restaurants/rst_id{{rest_item.id}}">Visit us now!!!</a></h4>	
-						<br>							
-					{% endfor %}
+					{% else %}
+						<h3>No news and promo yet ...</h3>
+					{% endif %}
 				</div>
             </div>
 		</div>

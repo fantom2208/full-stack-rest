@@ -42,6 +42,7 @@
 					{% else %}
 						<h1>List of all menu items:</h1>
 					{% endif %}
+
 					{% for item in menu_items %}
 						<div class="item div_post">
 							{% if rest %}
@@ -78,13 +79,16 @@
 						</div>
 					{% endfor %}
 				{% else %}
-					<!-- form to cancell add new menu item  becouse all already existed -->
-					<h4>All items already existed in '{{rest.name}}' restaurant. </h4>
-					<form action="{{ url_for('restaurant_id', 
-									 rst_id = 'rst_id' ~ rest.id)}}" method = 'get'>
-						<input type='submit' value='Cancel'>
-					</form>
-
+					{% if rest %}
+						<!-- form to cancell add new menu item  becouse all already existed -->
+						<h3>All items already existed in '{{rest.name}}' restaurant. </h3>
+						<form action="{{ url_for('restaurant_id', 
+										rst_id = 'rst_id' ~ rest.id)}}" method = 'get'>
+							<input type='submit' value='Cancel'>
+						</form>
+					{% else %}
+						<h3>No menu items yet ... </h3>
+					{% endif %}
 				{% endif %}	
 				</div>
 

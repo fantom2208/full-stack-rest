@@ -1,27 +1,29 @@
 
 # import flask object and create instance
 from flask import Flask, render_template, request, redirect, url_for
-app = Flask(__name__)
 
-# print('-----------')
-# cont = vars(app)
-# for key,item in cont.items():
-#     print(key, '-', item)
-# print('-----------')
+# database imports
+# Connection to DB and adding information in tables via script
+# create_engine will point (connect) to database we used 
+from sqlalchemy import create_engine
+# import to make connection to 
+from sqlalchemy.orm import sessionmaker
+# from initial setup module import CLASSES 
+from database.database_setup import Base, MenuItem, Restaurant, RestMenuItem
 
 # dummy variables to simulate ORM functioning
 # Restaurants (list of objects)
 restaurant_lst = [{'id': 1,
                  'name' : 'Top Burger', 
                  'description' : 'Home restaurant at the historical center of the town',
-                 'address' : 'Hloria, Middle street, 12'}, 
-                {'name':'Blue Burgers', 
-                 'description' : 'Nice restaurant at the town',
-                 'address' : 'Georgia, Central square, 2',
-                 'id': 2},
+                 'address' : 'Hloria, Middle street, 12'},
                 {'name':'Taco Hut', 
                  'description' : 'Mexican restaurant at the town',
                  'address' : 'Raho, Central street, 3',          
+                 'id': 2}                 , 
+                {'name':'Blue Burgers', 
+                 'description' : 'Nice restaurant at the town',
+                 'address' : 'Georgia, Central square, 2',
                  'id': 3}]
 # Menu Items (list of objects)
 menu_item_lst = [{'name':'Cheese Pizza',
@@ -69,21 +71,24 @@ rest_menu_item_lst = [{'restaurant_id' : 1,
                      'price' : 150, 
                      'comment' : '',
                      'id': 3}, 
-                    {'restaurant_id' : 2, 
+                    {'restaurant_id' : 3, 
                      'menu_item_id' : 2, 
                      'price' : 250, 
                      'comment' : '',
                      'id': 4},
-                    {'restaurant_id' : 2, 
+                    {'restaurant_id' : 3, 
                      'menu_item_id' : 4, 
                      'price' : 150, 
                      'comment' : '',
                      'id': 5},
-                    {'restaurant_id' : 2, 
+                    {'restaurant_id' : 3, 
                      'menu_item_id' : 1, 
                      'price' : 600, 
                      'comment' : 'Promo price',
                      'id': 6}]
+
+
+
 
 
 # dummy function to simulate query of getting restaurant item by restaurant id
@@ -153,11 +158,35 @@ def query_list_rest_menu_items_by_mnu(mnu_id):
             # print(item)
     return query_list
 
+
+#def set_connection():
+# set connection to db (from end of CONFIGURATION)
+# instance (example) of engine class and connect to database 
+engine = create_engine('sqlite:///database/restaurantmenu.db',
+                        connect_args={'check_same_thread': False})
+# mekes connection between CLASSES and corresponding tables
+Base.metadata.bind = engine
+# establish communication between code and engine
+db_rest_ses = sessionmaker(bind = engine)
+# set interface to write all commands in SQL
+# but not send them till method commit() 
+rest_ses = db_rest_ses()
+
+# instance of Flask object
+app = Flask(__name__)
+
+
 # 1. Routing for main page - all restaurants list
 @app.route('/')
 @app.route('/restaurants/')
 def restaurants():
-    return render_template('restaurants.html', rest_items = restaurant_lst)
+    # query to get all restaurants
+    rest_all_rec = rest_ses.query(Restaurant).all() 
+    # print('Readed records qnty:', len(rest_all_rec))
+    return render_template('restaurants.html', rest_items = rest_all_rec)
+
+    # previous solutions
+    # return render_template('restaurants.html', rest_items = restaurant_lst)
     # return '1. Returning list of all restaurants... '
 
 # 1.1. Routing to add restaurant into list
@@ -198,13 +227,45 @@ def restaurant_id(rst_id):
     #get restaurant id value
     rst_id_val = int(rst_id[6:])
 
-    #simulate "dummy" queries to get data by restaurant id
-    restaurant = query_restaurants(rst_id_val)
-    rest_menu_items = query_list_rest_menu_items_by_rst(rst_id_val)
-    ftrd_menu_items = query_list_menu_items(rest_menu_items)
+    # query to get restaurant with id = rst_id_val
+    rest_by_id = rest_ses.query(Restaurant).\
+                          filter(Restaurant.id == rst_id_val).one()
+    # print('Readed records qnty:', 1 if rest_by_id else 0)
+    
+    # query to get all 'price' records for sprcific restaurant id
+    rest_id_menu_items = rest_ses.query(RestMenuItem).\
+                                  filter(RestMenuItem.restaurant_id == rst_id_val).all()
+    # print('Readed records qnty:', len(rest_id_menu_items))
+    
+    if rest_id_menu_items:
+        # select all menu item id's from list of 'price' records for filtering
+        rest_id_menu_items_ids = []
+        for item in rest_id_menu_items:
+            if item.menu_item_id in rest_id_menu_items_ids:
+                continue
+            else:
+                rest_id_menu_items_ids.append(item.menu_item_id)
+        # print(rest_id_menu_items_ids)
 
-    return render_template('restaurant_id.html', rest_item = restaurant,
-                            mnu_itm_prs = rest_menu_items, mnu_itms = ftrd_menu_items)
+        # query to get all menu item records only for sprcific restaurant id (via price)
+        fltr_menu_items = rest_ses.query(MenuItem).\
+                                filter(MenuItem.id.in_(rest_id_menu_items_ids)).all()
+    else:
+        fltr_menu_items = []
+    # print('Readed records qnty:', len(fltr_menu_items))
+    
+    return render_template('restaurant_id.html', rest_item = rest_by_id,
+                            mnu_itm_prs = rest_id_menu_items, 
+                            mnu_itms = fltr_menu_items)   
+
+    # previous solutions
+    #simulate "dummy" queries to get data by restaurant id
+    # restaurant = query_restaurants(rst_id_val)
+    # rest_menu_items = query_list_rest_menu_items_by_rst(rst_id_val)
+    # ftrd_menu_items = query_list_menu_items(rest_menu_items)
+    # return render_template('restaurant_id.html', rest_item = restaurant,
+    #                         mnu_itm_prs = rest_menu_items, mnu_itms = ftrd_menu_items)
+    
     # return '2. Returning menu of reataurant with id: ' + rst_id[6:]
 
 # 2.1. Routing to add menu item to specific restaurant
@@ -432,17 +493,33 @@ def filter_restaurant_id(rst_id):
 def menu_item_id(mnu_id, rst_id=None):
     #get menu item id value
     mnu_id_val = int(mnu_id[6:])
-    mnu_itm = query_menu_items(mnu_id_val)
+
+    # query to get menu item with id = mnu_id_val
+    mnu_by_id = rest_ses.query(MenuItem).\
+                          filter(MenuItem.id == mnu_id_val).one()
+    # print('Readed records qnty:', 1 if mnu_by_id else 0)
+
+    # previous solutions
+    # mnu_itm = query_menu_items(mnu_id_val)
 
     #get restaurant id value if possible
     if rst_id:
         rst_id_val = int(rst_id[6:])
-        restaurant = query_restaurants(rst_id_val)
+        # query to get restaurant with id = rst_id_val
+        restaurant = rest_ses.query(Restaurant).\
+                              filter(Restaurant.id == rst_id_val).one()
+        # print('Readed records qnty:', 1 if restaurant else 0)
+        
+        # previous solutions
+        # restaurant = query_restaurants(rst_id_val)
     else:
         restaurant = None
-    
-    return render_template('menu_item_id.html', menu_item = mnu_itm,
+
+    return render_template('menu_item_id.html', menu_item = mnu_by_id,
                             rest_item = restaurant)
+    
+    # return render_template('menu_item_id.html', menu_item = mnu_itm,
+    #                         rest_item = restaurant)
     # return '3*. Returning menu item parameters with id: ' + mnu_id[6:]
 
 # 3.1*. Routing to edit specific menu item info
@@ -535,27 +612,68 @@ def menu_items(rst_id = None):
     if rst_id:  
         #get menu item id value
         rst_id_val = int(rst_id[6:])    
-        rst_itm = query_restaurants(rst_id_val)
-        # get already existed menu items for specific restaurant
-        rest_menu_items = query_list_rest_menu_items_by_rst(rst_id_val)
-        ftrd_menu_items = query_list_menu_items(rest_menu_items)
+        # query to get restaurant with id = rst_id_val
+        restaurant = rest_ses.query(Restaurant).\
+                              filter(Restaurant.id == rst_id_val).one()
+        # print('Readed records qnty:', 1 if restaurant else 0)
 
-        # select only not existed menu items
-        ne_menu_item_lst = []
-        for item in menu_item_lst:
-            if item in ftrd_menu_items:
-                continue                        # skip item
-            else:
-                ne_menu_item_lst.append(item)   # add to list
+
+        # query to get all 'price' records for sprcific restaurant id
+        rest_id_menu_items = rest_ses.query(RestMenuItem).\
+                                      filter(RestMenuItem.restaurant_id == rst_id_val).all()
+        # print('Readed records qnty:', len(rest_id_menu_items))
+
+        # select all menu item id's and restaurant  ids from list of 'price' records
+        # for filtering
         
-        return render_template('menu_items.html', menu_items = ne_menu_item_lst,
-                                rest = rst_itm)
+        if rest_id_menu_items:
+            menu_items_ids = []
+            for item in rest_id_menu_items:
+                # filter ids for menu items
+                if item.menu_item_id in menu_items_ids:
+                    continue
+                else:
+                    menu_items_ids.append(item.menu_item_id)
+
+            # query to get menu items with ids not existen for restaurant id (via price)
+            no_menu_item_lst = rest_ses.query(MenuItem).\
+                                        filter(~MenuItem.id.in_(menu_items_ids)).all()
+        else:
+            no_menu_item_lst = rest_ses.query(MenuItem).all()
+        # print('Readed records qnty:', len(no_menu_item_lst))
+
+        return render_template('menu_items.html', menu_items = no_menu_item_lst,
+                                rest = restaurant)
+        
+        # previous solutions
+        # rst_itm = query_restaurants(rst_id_val)
+        # get already existed menu items for specific restaurant
+        # rest_menu_items = query_list_rest_menu_items_by_rst(rst_id_val)
+        # ftrd_menu_items = query_list_menu_items(rest_menu_items)
+        # select only not existed menu items
+        # no_menu_item_lst = []
+        #for item in menu_item_lst:
+        #    if item in ftrd_menu_items:
+        #        continue                        # skip item
+        #    else:
+        #        no_menu_item_lst.append(item)   # add to list
+        
+        # return render_template('menu_items.html', menu_items = ne_menu_item_lst,
+        #                         rest = rst_itm)
     # show all menu items 
     else:
         rst_itm = None
-        return render_template('menu_items.html', menu_items = menu_item_lst,
+        # query to get all menu items
+        menu_items_all_rec = rest_ses.query(MenuItem).all() 
+        # print('Readed records qnty:', len(menu_items_all_rec))
+               
+        return render_template('menu_items.html', menu_items = menu_items_all_rec,
                                 rest = rst_itm)
-    # return '4*. Returning list of all menu items...  '
+        
+        # previous solutions
+        # return render_template('menu_items.html', menu_items = menu_item_lst,
+        #                         rest = rst_itm)
+        # return '4*. Returning list of all menu items...  '
 
 
 # 4.1*. Routing to add new menu item
@@ -592,17 +710,59 @@ def add_menu_item():
 # 5*. Routing to show 'News & Promo' page
 @app.route('/restaurants/news_promo')
 def news_promo():
-    np_rest_menu_item_lst = []
-    for item in rest_menu_item_lst:
-        if item['comment']:
-            np_rest_menu_item_lst.append(item)
+    # query to get all 'price' records for sprcific restaurant id
+    prmo_rest_menu_item_lst = rest_ses.query(RestMenuItem).\
+                                  filter(RestMenuItem.comment != None).all()
+    # print('Readed records qnty:', len(prmo_rest_menu_item_lst))
+    
+    if prmo_rest_menu_item_lst:
+        # select all menu item id's and restaurant  ids from list of 'price' records
+        # for filtering
+        menu_items_ids = []
+        rest_ids = []
+        for item in prmo_rest_menu_item_lst:
+            # filter ids for menu items
+            if item.menu_item_id in menu_items_ids:
+                continue
+            else:
+                menu_items_ids.append(item.menu_item_id)
+            # filter ids for restaurants
+            if item.restaurant_id in rest_ids:
+                continue
+            else:
+                rest_ids.append(item.restaurant_id)
+        # print('Menu id values:', menu_items_ids)
+        # print('Menu id values:', rest_ids)
 
-    np_menu_item_lst = query_list_menu_items(np_rest_menu_item_lst)
-    np_restaurant_lst = query_list_restaurants(np_rest_menu_item_lst)
+        # query to get all menu item records only for promo id (via price)
+        fltr_menu_items = rest_ses.query(MenuItem).\
+                                filter(MenuItem.id.in_(menu_items_ids)).all()
+        # print('Readed records qnty:', len(fltr_menu_items))
 
-    return render_template('news_promo.html', rest_lst = np_restaurant_lst,
-                           mnu_itms = np_menu_item_lst, 
-                           mnu_itm_prs = np_rest_menu_item_lst)
+        # query to get all restaurants records only for promo id (via price)
+        fltr_restaurants = rest_ses.query(Restaurant).\
+                                filter(Restaurant.id.in_(rest_ids)).all()
+        # print('Readed records qnty:', len(fltr_menu_items))
+    else:
+        fltr_menu_items = []
+        fltr_restaurants = []
+
+    return render_template('news_promo.html', mnu_itm_prs = prmo_rest_menu_item_lst,
+                           mnu_itms = fltr_menu_items, 
+                           rest_lst = fltr_restaurants)
+    
+    # previous solutions
+    # np_rest_menu_item_lst = []
+    # for item in rest_menu_item_lst:
+    #    if item['comment']:
+    #        np_rest_menu_item_lst.append(item)
+
+    # np_menu_item_lst = query_list_menu_items(np_rest_menu_item_lst)
+    # np_restaurant_lst = query_list_restaurants(np_rest_menu_item_lst)
+
+    # return render_template('news_promo.html', rest_lst = np_restaurant_lst,
+    #                       mnu_itms = np_menu_item_lst, 
+    #                       mnu_itm_prs = np_rest_menu_item_lst)
 
     # return '5*. Returning list of promo menu items... \
     #         (with not NULL comments at RestMenuItem table)  '
@@ -616,6 +776,8 @@ def contact_us():
         
 # if mani module to execute
 if __name__ == '__main__':
+    
+    
     # strat debug mode
     app.debug = True
     # run server at port 5000
