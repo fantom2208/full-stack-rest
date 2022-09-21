@@ -461,7 +461,7 @@ def edit_menu_item_for_restaurant_id(rst_id, mnu_id):
             # print('Readed records qnty:', 1 if menu_item_by_id else 0)
 
             # update object attributes and commit
-            rest_menu_item =  upd_item_attr(rest_menu_item, request.form)
+            rest_menu_item = upd_item_attr(rest_menu_item, request.form)
             rest_ses.add(rest_menu_item)
             rest_ses.commit()
             
@@ -492,14 +492,29 @@ def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
     if request.method == 'GET':
         #get restaurant id value
         rst_id_val = int(rst_id[6:])
-        restaurant = query_restaurants(rst_id_val)
 
-        #get menu item id value
+        # query to get restaurant with id = rst_id_val
+        rest_by_id = rest_ses.query(Restaurant).\
+                              filter(Restaurant.id == rst_id_val).one()
+        # print('Readed records qnty:', 1 if rest_by_id else 0)
+        
+        # previous solution
+        # restaurant = query_restaurants(rst_id_val)
+
+        # get menu item id value
         mnu_id_val = int(mnu_id[6:])
-        mnu_itm = query_menu_items(mnu_id_val)
+
+        # query to get menu item with id = mnu_id_val
+        menu_item_by_id = rest_ses.query(MenuItem).\
+                                filter(MenuItem.id == mnu_id_val).one()
+        # print('Readed records qnty:', 1 if menu_item_by_id else 0)
+
+
+        # previous solution
+        # mnu_itm = query_menu_items(mnu_id_val)
 
         return render_template('delete_menu_item_for_restaurant_id.html',
-                                rest = restaurant, item = mnu_itm )
+                                rest = rest_by_id, item = menu_item_by_id )
         # return '2.3. Returning form to delete menu item with id: ' + mnu_id[6:] + \
         #        ' for  specific restaurant id: ' + rst_id[6:]
 
@@ -511,9 +526,21 @@ def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
             #get menu item id value
             mnu_id_val = int(mnu_id[6:])
 
-            rst_itm = query_rest_menu_items(rst_id_val, mnu_id_val)
-            rst_itm_idx = rest_menu_item_lst.index(rst_itm)
-            rest_menu_item_lst.pop(rst_itm_idx)
+
+            # query to get price menu item with restaurant id and  menu item id
+            rest_menu_item = rest_ses.query(RestMenuItem).\
+                                      filter(RestMenuItem.restaurant_id == rst_id_val).\
+                                      filter(RestMenuItem.menu_item_id == mnu_id_val).one()
+            # print('Readed records qnty:', 1 if menu_item_by_id else 0)
+
+            # delete price menu item record and commit
+            rest_ses.delete(rest_menu_item)
+            rest_ses.commit()
+
+            # previos solution
+            # rst_itm = query_rest_menu_items(rst_id_val, mnu_id_val)
+            # rst_itm_idx = rest_menu_item_lst.index(rst_itm)
+            # rest_menu_item_lst.pop(rst_itm_idx)
             
             return redirect(url_for('restaurant_id', rst_id = rst_id ))
             # return '2.3*. Redirecting to page with restaurant id: ' + rst_id[6:]
@@ -585,13 +612,26 @@ def edit_restaurant_id(rst_id):
 def delete_restaurant_id(rst_id):
     if request.method == 'GET':
         #get menu item id value
-        rst_id_val = int(rst_id[6:])    
-        rst_itm = query_restaurants(rst_id_val)
+        rst_id_val = int(rst_id[6:]) 
+
+        # query to get restaurant with id = rst_id_val
+        rest_by_id = rest_ses.query(Restaurant).\
+                              filter(Restaurant.id == rst_id_val).one()
+        # print('Readed records qnty:', 1 if rest_by_id else 0)
+
+        # query to get price menu item with restaurant id 
+        rest_menu_items = rest_ses.query(RestMenuItem).\
+                                  filter(RestMenuItem.restaurant_id == rst_id_val).all()
+        # print('Readed records qnty:', 1 if menu_item_by_id else 0)
+
+
+        # previous solution   
+        # rst_itm = query_restaurants(rst_id_val)
 
         # get menu item quantity for specific restaurant
-        rest_menu_items = query_list_rest_menu_items_by_rst(rst_id_val)
+        # rest_menu_items = query_list_rest_menu_items_by_rst(rst_id_val)
 
-        return render_template('delete_restaurant_id.html',  rest = rst_itm, 
+        return render_template('delete_restaurant_id.html',  rest = rest_by_id, 
                                 mnu_itms_qnt = len(rest_menu_items))
         #return '2.5. Returning form to delete reataurant with id: ' + rst_id[6:]
     
@@ -600,18 +640,44 @@ def delete_restaurant_id(rst_id):
             #get menu item id value
             rst_id_val = int(rst_id[6:]) 
 
+            # previous solution
             # delete all records from RestMenuItem table
-            idx = 0
-            while idx < len(rest_menu_item_lst):
-                if rest_menu_item_lst[idx]['restaurant_id'] == rst_id_val:
-                    # print('------\n', rest_menu_item_lst[idx])
-                    rest_menu_item_lst.pop(idx)
-                else:
-                    idx += 1
+            # idx = 0
+            # while idx < len(rest_menu_item_lst):
+            #    if rest_menu_item_lst[idx]['restaurant_id'] == rst_id_val:
+            #        # print('------\n', rest_menu_item_lst[idx])
+            #        rest_menu_item_lst.pop(idx)
+            #    else:
+            #        idx += 1
 
-            rst_itm = query_restaurants(rst_id_val)
-            rst_itm_idx = restaurant_lst.index(rst_itm)
-            restaurant_lst.pop(rst_itm_idx)
+            # query to get all records with restaurant id from RestMenuItem table
+            rest_menu_items = rest_ses.query(RestMenuItem).\
+                                          filter(RestMenuItem.restaurant_id == rst_id_val).all()
+            # print('Readed records qnty:', len (rest_ids_menu_item))
+
+            # if restaurant have menu items - delete records from RestMenuItem
+            if rest_menu_items:
+                # delete selected records from RestMenuItem table
+                for item in rest_menu_items:
+                    rest_ses.delete(item)
+                rest_ses.commit()
+
+
+            # previous solution
+            # rst_itm = query_restaurants(rst_id_val)
+            # rst_itm_idx = restaurant_lst.index(rst_itm)
+            # restaurant_lst.pop(rst_itm_idx)
+
+
+            # query to get restaurant with id = rst_id_val
+            rest_by_id = rest_ses.query(Restaurant).\
+                                  filter(Restaurant.id == rst_id_val).one()
+            # print('Readed records qnty:', 1 if rest_by_id else 0)
+
+            # delete restaurant record and commit
+            rest_ses.delete(rest_by_id)
+            rest_ses.commit()
+
             return redirect(url_for('restaurants'))
             # return '3.2*. Redirecting to page with all restaurantss...
 
@@ -731,32 +797,89 @@ def delete_menu_item_id(mnu_id):
     if request.method == 'GET':
         #get menu item id value
         mnu_id_val = int(mnu_id[6:])
-        rest_menu_items = query_list_rest_menu_items_by_mnu(mnu_id_val)
-        ftrd_rest_lst =[]
-        for item in rest_menu_items:
-            ftrd_rest_lst.append(query_restaurants(item['restaurant_id']))
 
-        mnu_itm = query_menu_items(mnu_id_val)
-        return render_template('delete_menu_item_id.html',  menu_item = mnu_itm,
-                                rest_lst = ftrd_rest_lst)
+        # query to get menu item with id = mnu_id_val
+        menu_by_id = rest_ses.query(MenuItem).\
+                              filter(MenuItem.id == mnu_id_val).one()
+        # print('Readed records qnty:', 1 if mnu_by_id else 0)
+
+        # query to get all records with menu item id  from RestMenuItem table
+        rest_ids_menu_item = rest_ses.query(RestMenuItem).\
+                                      filter(RestMenuItem.menu_item_id == mnu_id_val).all()
+        # print('Readed records qnty:', len (rest_ids_menu_item))
+
+        # get list of restaurant ids used menu item id = mnu_id_val
+        if rest_ids_menu_item:
+            rest_ids_lst = []
+            for item in rest_ids_menu_item:
+                # filter ids for restaurants
+                if item.restaurant_id in rest_ids_lst:
+                    continue
+                else:
+                    rest_ids_lst.append(item.restaurant_id)
+
+            # print(rest_ids_lst)
+
+            # query to get all restaurants with menu item id 
+            rest_wit_menu_item = rest_ses.query(Restaurant).\
+                                          filter(Restaurant.id.in_(rest_ids_lst)).all()
+            # print('Readed records qnty:', len (rest_wit_menu_item))
+        else:
+            rest_wit_menu_item = []
+        
+
+        # previous solution
+        # rest_menu_items = query_list_rest_menu_items_by_mnu(mnu_id_val)
+        # ftrd_rest_lst =[]
+        # for item in rest_menu_items:
+        #    ftrd_rest_lst.append(query_restaurants(item['restaurant_id']))
+
+        # mnu_itm = query_menu_items(mnu_id_val)
+        return render_template('delete_menu_item_id.html',  menu_item = menu_by_id,
+                                rest_lst = rest_wit_menu_item)
         # return '3.2*. Returning form to delete menu item with id: ' + mnu_id[6:]
     
     if request.method == 'POST':
         if request.form.get('delete_button',0):
             #get menu item id value
             mnu_id_val = int(mnu_id[6:])
-            # delete all records from RestMenuItem table
-            idx = 0
-            while idx < len(rest_menu_item_lst):
-                if rest_menu_item_lst[idx]['menu_item_id'] == mnu_id_val:
-                    # print('------\n', rest_menu_item_lst[idx])
-                    rest_menu_item_lst.pop(idx)
-                else:
-                    idx += 1
 
-            mnu_itm = query_menu_items(mnu_id_val)
-            mnu_itm_idx = menu_item_lst.index(mnu_itm)
-            menu_item_lst.pop(mnu_itm_idx)
+            # query to get all records with menu item id = mnu_id_val
+            rest_menu_by_id = rest_ses.query(RestMenuItem).\
+                                      filter(RestMenuItem.menu_item_id == mnu_id_val).all()
+            # print('Readed records qnty:', len(rest_menu_by_id))
+
+            # if menu item is used at restaurants - delete records from RestMenuItem
+            if rest_menu_by_id:
+                # delete selected records from RestMenuItem table
+                for item in rest_menu_by_id:
+                    rest_ses.delete(item)
+                rest_ses.commit() 
+            
+            # previous solution
+            # delete all records from RestMenuItem table
+            # idx = 0
+            # while idx < len(rest_menu_item_lst):
+            #     if rest_menu_item_lst[idx]['menu_item_id'] == mnu_id_val:
+            #        # print('------\n', rest_menu_item_lst[idx])
+            #         rest_menu_item_lst.pop(idx)
+            #    else:
+            #        idx += 1
+
+
+            # query to get menu item with id = mnu_id_val
+            menu_by_id = rest_ses.query(MenuItem).\
+                                  filter(MenuItem.id == mnu_id_val).one()
+            # print('Readed records qnty:', 1 if mnu_by_id else 0)
+
+            # delete selected record from MenuItem table
+            rest_ses.delete(menu_by_id)
+            rest_ses.commit() 
+
+            # previous solution
+            # mnu_itm = query_menu_items(mnu_id_val)
+            # mnu_itm_idx = menu_item_lst.index(mnu_itm)
+            # menu_item_lst.pop(mnu_itm_idx)
             return redirect(url_for('menu_items'))
             # return '3.2*. Redirecting to page with menu items...
 
@@ -786,8 +909,7 @@ def menu_items(rst_id = None):
         # print('Readed records qnty:', len(rest_id_menu_items))
 
         # select all menu item id's and restaurant  ids from list of 'price' records
-        # for filtering
-        
+        # for filtering        
         if rest_id_menu_items:
             menu_items_ids = []
             for item in rest_id_menu_items:
