@@ -39,8 +39,8 @@
 				<h1>News and promo menu:</h1>
 				<div class="item div_post">
 					{% if rest_lst %}
-						{% for rest_item in rest_lst %}    
-							<img src={{url_for('static', filename = rest_item.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg' )}} width="120" alt="Restaurant logo">
+						{% for (rest_item, logo_name) in rest_lst %}    
+							<img src={{url_for('static', filename = logo_name)}} width="120" alt="Restaurant logo">
 							<!--
 							<br>
 							<span> {{rest_item.description}} </span>

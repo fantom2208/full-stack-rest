@@ -11,6 +11,9 @@ from sqlalchemy.orm import sessionmaker
 # from initial setup module import CLASSES 
 from database.database_setup import Base, MenuItem, Restaurant, RestMenuItem
 
+# import os module to check files for logo
+import os.path as path  
+
 # dummy variables to simulate ORM functioning
 # Restaurants (list of objects)
 restaurant_lst = [{'id': 1,
@@ -176,6 +179,20 @@ rest_ses = db_rest_ses()
 app = Flask(__name__)
 
 
+# method to set item attributs via item_dic
+def set_item_attr(add_item, item_dic):
+    for (key, item) in item_dic.items():
+        try:
+            # skip button name key
+            if 'button' in key:
+                continue
+            else:
+                setattr(add_item, key, item)
+        except:
+            pass
+    return add_item
+
+
 # 1. Routing for main page - all restaurants list
 @app.route('/')
 @app.route('/restaurants/')
@@ -183,7 +200,17 @@ def restaurants():
     # query to get all restaurants
     rest_all_rec = rest_ses.query(Restaurant).all() 
     # print('Readed records qnty:', len(rest_all_rec))
-    return render_template('restaurants.html', rest_items = rest_all_rec)
+
+    # check logo image files and create list of dictionaries
+    rest_rec_logo = []
+    for item in rest_all_rec:
+        logo_file = item.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
+        # if logo not existed
+        if not path.isfile('static/'+ logo_file):
+            logo_file = 'no_image.jpg'
+        rest_rec_logo.append((item, logo_file))
+
+    return render_template('restaurants.html', rest_items = rest_rec_logo)
 
     # previous solutions
     # return render_template('restaurants.html', rest_items = restaurant_lst)
@@ -201,16 +228,28 @@ def add_restaurant():
     if request.method == 'POST':
         # add_button pressed - add to DB
         if request.form.get('add_button',0):
-            new_restaurant = {'name' : request.form['name'], 
-                              'description' : request.form['description'], 
-                              'address' : request.form['address'], 
-                              'id' : len(restaurant_lst) + 1}
+            
+            new_rest =  set_item_attr(Restaurant(), request.form)
+            rest_ses.add(new_rest)
+            rest_ses.commit()
 
-            restaurant_lst.append(new_restaurant)
-	        # new_menu_item = MenuItem(name = request.form['name'], description = request.form['description'], price = request.form['price'], course = request.form['course'], restaurant_id = restaurant_id)
-            # session.add(newItem)
-	        # session.commit()
-            return redirect(url_for('restaurant_id', rst_id = 'rst_id{}'.format(new_restaurant['id']) ))
+            # query to get added restaurant with namne and address
+            rest_by_id = rest_ses.query(Restaurant).\
+                                  filter(Restaurant.name == new_rest.name).\
+                                  filter(Restaurant.address == new_rest.address).one()
+            # print('Readed records qnty:', 1 if rest_by_id else 0)
+
+            return redirect(url_for('restaurant_id', rst_id = 'rst_id{}'.format(rest_by_id.id) ))
+
+            # previous solutions
+            # new_restaurant = {'name' : request.form['name'], 
+            #                  'description' : request.form['description'], 
+            #                  'address' : request.form['address'],
+            #                  'id' : len(restaurant_lst) + 1 }
+
+            # restaurant_lst.append(new_restaurant)
+	        
+            # return redirect(url_for('restaurant_id', rst_id = 'rst_id{}'.format(new_restaurant['id']) ))
             # return '1.1*. Redirecting to page with new restaurant...  
 
         # cancel_button pressed - redirect to menu items page
@@ -253,10 +292,16 @@ def restaurant_id(rst_id):
     else:
         fltr_menu_items = []
     # print('Readed records qnty:', len(fltr_menu_items))
+
+    logo_file = rest_by_id.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
+    # if logo not existed
+    if not path.isfile('static/'+ logo_file):
+        logo_file = 'no_image.jpg'  
     
     return render_template('restaurant_id.html', rest_item = rest_by_id,
                             mnu_itm_prs = rest_id_menu_items, 
-                            mnu_itms = fltr_menu_items)   
+                            mnu_itms = fltr_menu_items, 
+                            logo_name = logo_file)  
 
     # previous solutions
     #simulate "dummy" queries to get data by restaurant id
@@ -277,14 +322,31 @@ def add_menu_item_to_restaurant_id(rst_id, mnu_id):
     if request.method == 'GET':
         #get restaurant id value
         rst_id_val = int(rst_id[6:])
-        restaurant = query_restaurants(rst_id_val)
+        
+        # query to get restaurant with id = rst_id_val
+        rest_by_id = rest_ses.query(Restaurant).\
+                          filter(Restaurant.id == rst_id_val).one()
+        # print('Readed records qnty:', 1 if rest_by_id else 0)
+
+        # previous solution
+        # restaurant = query_restaurants(rst_id_val)
 
         #get menu item id value
         mnu_id_val = int(mnu_id[6:])
-        mnu_itm = query_menu_items(mnu_id_val)
 
+        # query to get menu item with id = mnu_id_val
+        menu_item_by_id = rest_ses.query(MenuItem).\
+                                filter(MenuItem.id == mnu_id_val).one()
+        # print('Readed records qnty:', 1 if menu_item_by_id else 0)
+        
         return render_template('add_menu_item_to_restaurant_id.html',
-                                rest = restaurant, item = mnu_itm )
+                                rest = rest_by_id, item = menu_item_by_id )
+
+        # previous solution
+        # mnu_itm = query_menu_items(mnu_id_val)
+
+        # return render_template('add_menu_item_to_restaurant_id.html',
+        #                         rest = restaurant, item = mnu_itm )
         # return '2.1. Returning form to add menu item: ' + mnu_id[6:] + \
         #         ' to specific restaurant id: ' + rst_id[6:]
     
@@ -296,13 +358,23 @@ def add_menu_item_to_restaurant_id(rst_id, mnu_id):
             #get menu item id value
             mnu_id_val = int(mnu_id[6:])
 
-            new_rest_item = {'restaurant_id' : rst_id_val, 
+            rest_item_dic = {'restaurant_id' : rst_id_val, 
                              'menu_item_id' : mnu_id_val, 
                              'price' : int(request.form['price']), 
-                             'comment' : request.form['comment'], 
-                             'id' : len(rest_menu_item_lst) + 1}
+                             'comment' : request.form['comment']}
 
-            rest_menu_item_lst.append(new_rest_item)
+            new_rest_item =  set_item_attr(RestMenuItem(), rest_item_dic)
+            rest_ses.add(new_rest_item)
+            rest_ses.commit()       
+
+            # previous solution
+            # new_rest_item = {'restaurant_id' : rst_id_val, 
+            #                 'menu_item_id' : mnu_id_val, 
+            #                 'price' : int(request.form['price']), 
+            #                 'comment' : request.form['comment'], 
+            #                 'id' : len(rest_menu_item_lst) + 1}
+
+            # rest_menu_item_lst.append(new_rest_item)
 
             return redirect(url_for('restaurant_id', rst_id = rst_id))
             # return '2.1.Redirectingto to specific restaurant id: ' + rst_id[6:]
@@ -688,14 +760,19 @@ def add_menu_item():
     if request.method == 'POST':
         # add_button pressed - add to DB
         if request.form.get('add_button',0):
-            new_menu_item = {'name' : request.form['name'], 
-                             'description' : request.form['description'], 
-                             'course' : request.form['course'], 
-                             'weight' : int(request.form['weight']),
-                             'content' : request.form['content'],
-                             'id' : len(menu_item_lst) + 1}
+            new_item =  set_item_attr(MenuItem(), request.form)
+            rest_ses.add(new_item)
+            rest_ses.commit()            
+            
+            # previous solution
+            # new_menu_item = {'name' : request.form['name'], 
+            #                 'description' : request.form['description'], 
+            #                 'course' : request.form['course'], 
+            #                 'weight' : int(request.form['weight']),
+            #                 'content' : request.form['content'],
+            #                 'id' : len(menu_item_lst) + 1}
 
-            menu_item_lst.append(new_menu_item)
+            # menu_item_lst.append(new_menu_item)
 	        # new_menu_item = MenuItem(name = request.form['name'], description = request.form['description'], price = request.form['price'], course = request.form['course'], restaurant_id = restaurant_id)
             # session.add(newItem)
 	        # session.commit()
@@ -743,13 +820,23 @@ def news_promo():
         fltr_restaurants = rest_ses.query(Restaurant).\
                                 filter(Restaurant.id.in_(rest_ids)).all()
         # print('Readed records qnty:', len(fltr_menu_items))
+
+        # check logo image files and create list of dictionaries
+        fltr_restaurants_logo = []
+        for item in fltr_restaurants:
+            logo_file = item.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
+            # if logo not existed
+            if not path.isfile('static/'+ logo_file):
+                logo_file = 'no_image.jpg'
+            fltr_restaurants_logo.append((item, logo_file))
+
     else:
         fltr_menu_items = []
-        fltr_restaurants = []
+        fltr_restaurants_logo = []
 
     return render_template('news_promo.html', mnu_itm_prs = prmo_rest_menu_item_lst,
                            mnu_itms = fltr_menu_items, 
-                           rest_lst = fltr_restaurants)
+                           rest_lst = fltr_restaurants_logo)
     
     # previous solutions
     # np_rest_menu_item_lst = []

@@ -38,10 +38,10 @@
 			<div class="portfolio">
 				<h1>Our restaurants</h1>
                 {% if rest_items %}
-					{% for item in rest_items %}
+					{% for (item, logo_name) in rest_items %}
 						<div class="item div_post">
 							<a href="/restaurants/rst_id{{item.id}}">
-								<img src={{url_for('static', filename = item.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg' )}} width="270" alt="Restaurant logo">
+								<img src={{url_for('static', filename = logo_name )}} width="270" alt="Restaurant logo">
 							</a>
 							<h2> {{item.name}} </h2>
 							<span> {{item.description}} </span>
