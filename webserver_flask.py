@@ -179,15 +179,31 @@ rest_ses = db_rest_ses()
 app = Flask(__name__)
 
 
-# method to set item attributs via item_dic
+# method to set item attributs via form dictionary
 def set_item_attr(add_item, item_dic):
     for (key, item) in item_dic.items():
         try:
-            # skip button name key
-            if 'button' in key:
+            if 'button' in key:         # skip button name key
                 continue
-            else:
+            else:                       # set value to attribut
                 setattr(add_item, key, item)
+        except:
+            pass
+    return add_item
+
+# method to update (not empty) item attributs via form dictionary
+def upd_item_attr(add_item, item_dic):
+    for (key, item) in item_dic.items():
+        try:
+            if 'button' in key:             # skip button name key
+                continue            
+            elif item:                      # not empty value - update attribut
+                if item.lower() == 'none':  # update attribut to NULL value
+                    setattr(add_item, key, '')
+                else:                       # update attribut to entered value
+                    setattr(add_item, key, item)
+            else:                       # skip empty values
+                continue
         except:
             pass
     return add_item
@@ -228,12 +244,13 @@ def add_restaurant():
     if request.method == 'POST':
         # add_button pressed - add to DB
         if request.form.get('add_button',0):
-            
+
+            # set new  object attributes and commit
             new_rest =  set_item_attr(Restaurant(), request.form)
             rest_ses.add(new_rest)
             rest_ses.commit()
 
-            # query to get added restaurant with namne and address
+            # query to get added restaurant with namne and address to open page
             rest_by_id = rest_ses.query(Restaurant).\
                                   filter(Restaurant.name == new_rest.name).\
                                   filter(Restaurant.address == new_rest.address).one()
@@ -363,6 +380,7 @@ def add_menu_item_to_restaurant_id(rst_id, mnu_id):
                              'price' : int(request.form['price']), 
                              'comment' : request.form['comment']}
 
+            # set new  object attributes and commit
             new_rest_item =  set_item_attr(RestMenuItem(), rest_item_dic)
             rest_ses.add(new_rest_item)
             rest_ses.commit()       
@@ -394,16 +412,37 @@ def edit_menu_item_for_restaurant_id(rst_id, mnu_id):
     if request.method == 'GET':
         #get restaurant id value
         rst_id_val = int(rst_id[6:])
-        restaurant = query_restaurants(rst_id_val)
+
+        # query to get restaurant with id = rst_id_val
+        rest_by_id = rest_ses.query(Restaurant).\
+                              filter(Restaurant.id == rst_id_val).one()
+        # print('Readed records qnty:', 1 if rest_by_id else 0)
+
+        # previous solution
+        # restaurant = query_restaurants(rst_id_val)
 
         #get menu item id value
         mnu_id_val = int(mnu_id[6:])
-        mnu_itm = query_menu_items(mnu_id_val)
 
-        rst_itm = query_rest_menu_items(rst_id_val, mnu_id_val)
+        # query to get menu item with id = mnu_id_val
+        menu_item_by_id = rest_ses.query(MenuItem).\
+                                filter(MenuItem.id == mnu_id_val).one()
+        # print('Readed records qnty:', 1 if menu_item_by_id else 0)
+
+        # query to get price menu item with restaurant id and  menu item id
+        rest_menu_item = rest_ses.query(RestMenuItem).\
+                                  filter(RestMenuItem.restaurant_id == rst_id_val).\
+                                  filter(RestMenuItem.menu_item_id == mnu_id_val).one()
+        # print('Readed records qnty:', 1 if menu_item_by_id else 0)
+
+        # previous solution
+        # mnu_itm = query_menu_items(mnu_id_val)
+
+        # rst_itm = query_rest_menu_items(rst_id_val, mnu_id_val)
 
         return render_template('edit_menu_item_for_restaurant_id.html',
-                                rest = restaurant, item = mnu_itm, rest_item = rst_itm )
+                                rest = rest_by_id, item = menu_item_by_id, 
+                                rest_item = rest_menu_item )
         # return '2.2. Returning form to edit menu item with id: ' + mnu_id[6:] + \
         #        ' for  specific restaurant id: ' + rst_id[6:]
 
@@ -415,13 +454,25 @@ def edit_menu_item_for_restaurant_id(rst_id, mnu_id):
             #get menu item id value
             mnu_id_val = int(mnu_id[6:])
 
-            rst_itm = query_rest_menu_items(rst_id_val, mnu_id_val)
-            rst_itm_idx = rest_menu_item_lst.index(rst_itm)
+            # query to get price menu item with restaurant id and  menu item id
+            rest_menu_item = rest_ses.query(RestMenuItem).\
+                                      filter(RestMenuItem.restaurant_id == rst_id_val).\
+                                      filter(RestMenuItem.menu_item_id == mnu_id_val).one()
+            # print('Readed records qnty:', 1 if menu_item_by_id else 0)
 
-            if request.form['price']:
-                rest_menu_item_lst[rst_itm_idx]['price'] = request.form['price']
-            if request.form['comment']:
-                rest_menu_item_lst[rst_itm_idx]['comment'] = request.form['comment']
+            # update object attributes and commit
+            rest_menu_item =  upd_item_attr(rest_menu_item, request.form)
+            rest_ses.add(rest_menu_item)
+            rest_ses.commit()
+            
+            # previous solution
+            # rst_itm = query_rest_menu_items(rst_id_val, mnu_id_val)
+            # rst_itm_idx = rest_menu_item_lst.index(rst_itm)
+
+            # if request.form['price']:
+            #     rest_menu_item_lst[rst_itm_idx]['price'] = request.form['price']
+            #if request.form['comment']:
+            #     rest_menu_item_lst[rst_itm_idx]['comment'] = request.form['comment']
 
             return redirect(url_for('restaurant_id', rst_id = rst_id ))
             # return '2.2*. Redirecting to page with restaurant id: ' + rst_id[6:]
@@ -479,9 +530,17 @@ def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
 def edit_restaurant_id(rst_id):
     if request.method == 'GET':
         #get menu item id value
-        rst_id_val = int(rst_id[6:])    
-        rst_itm = query_restaurants(rst_id_val)
-        return render_template('edit_restaurant_id.html',  rest = rst_itm )
+        rst_id_val = int(rst_id[6:])  
+
+        # query to get restaurant with id = rst_id_val
+        rest_by_id = rest_ses.query(Restaurant).\
+                              filter(Restaurant.id == rst_id_val).one()
+        # print('Readed records qnty:', 1 if rest_by_id else 0)
+
+        # previous solution  
+        # rst_itm = query_restaurants(rst_id_val)
+
+        return render_template('edit_restaurant_id.html',  rest = rest_by_id )
         #return '2.4. Returning form to edit reataurant with id: ' + rst_id[6:]
 
     if request.method == 'POST':
@@ -489,15 +548,27 @@ def edit_restaurant_id(rst_id):
             #get menu item id value
             rst_id_val = int(rst_id[6:])
 
-            rst_itm = query_restaurants(rst_id_val)
-            rst_itm_idx = restaurant_lst.index(rst_itm)
+            # query to get restaurant with id = rst_id_val
+            rest_by_id = rest_ses.query(Restaurant).\
+                                  filter(Restaurant.id == rst_id_val).one()
+            # print('Readed records qnty:', 1 if rest_by_id else 0)
 
-            if request.form['name']:
-                restaurant_lst[rst_itm_idx]['name'] = request.form['name']
-            if request.form['description']:
-                restaurant_lst[rst_itm_idx]['description'] = request.form['description']
-            if request.form['address']:
-                restaurant_lst[rst_itm_idx]['address'] = request.form['address']  
+            # update object attributes and commit
+            rest_by_id =  upd_item_attr(rest_by_id, request.form)
+            rest_ses.add(rest_by_id)
+            rest_ses.commit()
+            
+
+            # previous solution
+            # rst_itm = query_restaurants(rst_id_val)
+            # rst_itm_idx = restaurant_lst.index(rst_itm)
+
+            # if request.form['name']:
+            #     restaurant_lst[rst_itm_idx]['name'] = request.form['name']
+            # if request.form['description']:
+            #     restaurant_lst[rst_itm_idx]['description'] = request.form['description']
+            # if request.form['address']:
+            #     restaurant_lst[rst_itm_idx]['address'] = request.form['address']  
                        
             return redirect(url_for('restaurant_id', rst_id = rst_id ))
             #  return '2.4*. Redirecting to page with restaurant id: ' + rst_id[6:] 
@@ -601,9 +672,17 @@ def menu_item_id(mnu_id, rst_id=None):
 def edit_menu_item_id(mnu_id):
     if request.method == 'GET':
         #get menu item id value
-        mnu_id_val = int(mnu_id[6:])    
-        mnu_itm = query_menu_items(mnu_id_val)
-        return render_template('edit_menu_item_id.html',  menu_item = mnu_itm )
+        mnu_id_val = int(mnu_id[6:])  
+        # query to get menu item with id = mnu_id_val
+        mnu_by_id = rest_ses.query(MenuItem).\
+                             filter(MenuItem.id == mnu_id_val).one()
+        # print('Readed records qnty:', 1 if mnu_by_id else 0)
+
+        return render_template('edit_menu_item_id.html',  menu_item = mnu_by_id )
+
+        # previous solution   
+        # mnu_itm = query_menu_items(mnu_id_val)
+        # return render_template('edit_menu_item_id.html',  menu_item = mnu_itm )
         # return '3.1*. Returning form to edit menu item with id: ' + mnu_id[6:]
 
     if request.method == 'POST':
@@ -611,19 +690,30 @@ def edit_menu_item_id(mnu_id):
             #get menu item id value
             mnu_id_val = int(mnu_id[6:])
 
-            mnu_itm = query_menu_items(mnu_id_val)
-            mnu_itm_idx = menu_item_lst.index(mnu_itm)
+            # query to get menu item with id = mnu_id_val
+            menu_by_id = rest_ses.query(MenuItem).\
+                                 filter(MenuItem.id == mnu_id_val).one()
+            # print('Readed records qnty:', 1 if mnu_by_id else 0)
 
-            if request.form['name']:
-                menu_item_lst[mnu_itm_idx]['name'] = request.form['name']
-            if request.form['description']:
-                menu_item_lst[mnu_itm_idx]['description'] = request.form['description']
-            if request.form['course']:
-                menu_item_lst[mnu_itm_idx]['course'] = request.form['course']  
-            if request.form['weight']:
-                menu_item_lst[mnu_itm_idx]['weight'] = request.form['weight'] 
-            if request.form['content']:
-                menu_item_lst[mnu_itm_idx]['content'] = request.form['content']  
+            # update object attributes and commit
+            menu_by_id =  upd_item_attr(menu_by_id, request.form)
+            rest_ses.add(menu_by_id)
+            rest_ses.commit()
+
+            # previous solution
+            # mnu_itm = query_menu_items(mnu_id_val)
+            # mnu_itm_idx = menu_item_lst.index(mnu_itm)
+
+            # if request.form['name']:
+            #    menu_item_lst[mnu_itm_idx]['name'] = request.form['name']
+            #if request.form['description']:
+            #     menu_item_lst[mnu_itm_idx]['description'] = request.form['description']
+            #if request.form['course']:
+            #    menu_item_lst[mnu_itm_idx]['course'] = request.form['course']  
+            #if request.form['weight']:
+            #    menu_item_lst[mnu_itm_idx]['weight'] = request.form['weight'] 
+            #if request.form['content']:
+            #    menu_item_lst[mnu_itm_idx]['content'] = request.form['content']  
             
             return redirect(url_for('menu_item_id', mnu_id = mnu_id ))
             #  return '3.1*. Redirecting to page with menu item with id: ' + mnu_id[6:] 
@@ -760,6 +850,7 @@ def add_menu_item():
     if request.method == 'POST':
         # add_button pressed - add to DB
         if request.form.get('add_button',0):
+            # set new  object attributes and commit
             new_item =  set_item_attr(MenuItem(), request.form)
             rest_ses.add(new_item)
             rest_ses.commit()            
