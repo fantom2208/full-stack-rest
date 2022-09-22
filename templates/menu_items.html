@@ -15,7 +15,7 @@
 		  	<div class="flex-container space-between header-content">
 				<div>
 			  		<span>
-						<img class="logo" src={{url_for('static', filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<img class="logo" src={{url_for("static", filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
 						<div class="logo_name">
 							<h2>Eat and Rest</h2>
 						</div>
@@ -80,12 +80,7 @@
 					{% endfor %}
 				{% else %}
 					{% if rest %}
-						<!-- form to cancell add new menu item  becouse all already existed -->
-						<h3>All items already existed in '{{rest.name}}' restaurant. </h3>
-						<form action="{{ url_for('restaurant_id', 
-										rst_id = 'rst_id' ~ rest.id)}}" method = 'get'>
-							<input type='submit' value='Cancel'>
-						</form>
+						<h3>All items already existed in '{{ rest.name }}' restaurant. </h3>						
 					{% else %}
 						<h3>No menu items yet ... </h3>
 					{% endif %}
@@ -93,7 +88,11 @@
 				</div>
 
 			{% if rest %}
-				<br>
+				<!-- form to cancell add new menu item  becouse all already existed -->
+				<form action="{{ url_for('restaurant_id', 
+								 rst_id = 'rst_id' ~ rest.id)}}" method = 'get'>
+					<input type='submit' value="Back to '{{rest.name}}'">
+				</form>
 			{% else %}
 				<!-- form to load add new menu item form -->
 				<form action="{{ url_for('add_menu_item')}}" method = 'get'>

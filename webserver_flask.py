@@ -37,8 +37,10 @@ def set_item_attr(add_item, item_dic):
         try:
             if 'button' in key:         # skip button name key
                 continue
-            else:                       # set value to attribut
+            elif item:                  # not empty value - set attribut
                 setattr(add_item, key, item)
+            else:                       # set attribut to NULL value
+                setattr(add_item, key, None)
         except:
             pass
     return add_item
@@ -120,34 +122,20 @@ def restaurant_id(rst_id):
     # query to get restaurant with id = rst_id_val
     rest_by_id = rest_ses.query(Restaurant).\
                           filter(Restaurant.id == rst_id_val).one()
-        
-    # query to get all 'price' records for sprcific restaurant id
-    rest_id_menu_items = rest_ses.query(RestMenuItem).\
-                                  filter(RestMenuItem.restaurant_id == rst_id_val).all()
-        
-    if rest_id_menu_items:
-        # select all menu item id's from list of 'price' records for filtering
-        rest_id_menu_items_ids = []
-        for item in rest_id_menu_items:
-            if item.menu_item_id in rest_id_menu_items_ids:
-                continue
-            else:
-                rest_id_menu_items_ids.append(item.menu_item_id)
-        
-        # query to get all menu item records only for sprcific restaurant id (via price)
-        fltr_menu_items = rest_ses.query(MenuItem).\
-                                filter(MenuItem.id.in_(rest_id_menu_items_ids)).all()
-    else:
-        fltr_menu_items = []
     
     logo_file = rest_by_id.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
     # if logo not existed
     if not path.isfile('static/'+ logo_file):
-        logo_file = 'no_image.jpg'  
+        logo_file = 'no_image.jpg' 
+
+    # select all menu items and prices for restaurant id = rst_id_val
+    rest_menu_items_by_id = rest_ses.query(MenuItem.id, MenuItem.name, MenuItem.description,
+                                           RestMenuItem.price, RestMenuItem.comment).\
+                                     join(MenuItem).\
+                                     filter(RestMenuItem.restaurant_id == rst_id_val).all()
     
     return render_template('restaurant_id.html', rest_item = rest_by_id,
-                            mnu_itm_prs = rest_id_menu_items, 
-                            mnu_itms = fltr_menu_items, 
+                            menu_items = rest_menu_items_by_id, 
                             logo_name = logo_file)  
     
 
@@ -346,11 +334,11 @@ def delete_restaurant_id(rst_id):
                               filter(Restaurant.id == rst_id_val).one()
         
         # query to get price menu item with restaurant id 
-        rest_menu_items = rest_ses.query(RestMenuItem).\
-                                  filter(RestMenuItem.restaurant_id == rst_id_val).all()
+        rest_menu_items_qnt = rest_ses.query(RestMenuItem).\
+                                  filter(RestMenuItem.restaurant_id == rst_id_val).count()
         
         return render_template('delete_restaurant_id.html',  rest = rest_by_id, 
-                                mnu_itms_qnt = len(rest_menu_items))
+                                mnu_itms_qnt = rest_menu_items_qnt)
             
     if request.method == 'POST':
         if request.form.get('delete_button',0):
@@ -459,28 +447,13 @@ def delete_menu_item_id(mnu_id):
         menu_by_id = rest_ses.query(MenuItem).\
                               filter(MenuItem.id == mnu_id_val).one()
         
-        # query to get all records with menu item id  from RestMenuItem table
-        rest_ids_menu_item = rest_ses.query(RestMenuItem).\
+        # query to get all restaurants with menu item id from RestMenuItem table
+        rest_menu_item_id = rest_ses.query(RestMenuItem.restaurant_id, Restaurant.name).\
+                                      join(Restaurant).\
                                       filter(RestMenuItem.menu_item_id == mnu_id_val).all()
-        
-        # get list of restaurant ids used menu item id = mnu_id_val
-        if rest_ids_menu_item:
-            rest_ids_lst = []
-            for item in rest_ids_menu_item:
-                # filter ids for restaurants
-                if item.restaurant_id in rest_ids_lst:
-                    continue
-                else:
-                    rest_ids_lst.append(item.restaurant_id)
-            
-            # query to get all restaurants with menu item id 
-            rest_wit_menu_item = rest_ses.query(Restaurant).\
-                                          filter(Restaurant.id.in_(rest_ids_lst)).all()
-        else:
-            rest_wit_menu_item = [] 
-        
+
         return render_template('delete_menu_item_id.html',  menu_item = menu_by_id,
-                                rest_lst = rest_wit_menu_item)        
+                                rest_lst = rest_menu_item_id)        
     
     if request.method == 'POST':
         if request.form.get('delete_button',0):
@@ -522,25 +495,18 @@ def menu_items(rst_id = None):
         restaurant = rest_ses.query(Restaurant).\
                               filter(Restaurant.id == rst_id_val).one()
         
-        # query to get all 'price' records for sprcific restaurant id
-        rest_id_menu_items = rest_ses.query(RestMenuItem).\
+        # query to get all menu item ids for sprcific restaurant id from RestMenuItem
+        rest_id_menu_items = rest_ses.query(RestMenuItem.menu_item_id).\
                                       filter(RestMenuItem.restaurant_id == rst_id_val).all()
         
-        # select all menu item id's and restaurant  ids from list of 'price' records
-        # for filtering        
-        if rest_id_menu_items:
-            menu_items_ids = []
-            for item in rest_id_menu_items:
-                # filter ids for menu items
-                if item.menu_item_id in menu_items_ids:
-                    continue
-                else:
-                    menu_items_ids.append(item.menu_item_id)
-
-            # query to get menu items with ids not existen for restaurant id (via price)
+        # select all menu item id's not existed in restaurant id to filter for adding       
+        if rest_id_menu_items:  # if not empty create list of menu item ids existed
+            mnu_itms_ids = [ a for (a,) in rest_id_menu_items ]
+           
+            # query to get menu items with ids not existed for restaurant id 
             no_menu_item_lst = rest_ses.query(MenuItem).\
-                                        filter(~MenuItem.id.in_(menu_items_ids)).all()
-        else:
+                                        filter(~MenuItem.id.in_(mnu_itms_ids)).all()
+        else:                   # no menu - select all menu items
             no_menu_item_lst = rest_ses.query(MenuItem).all()
        
         return render_template('menu_items.html', menu_items = no_menu_item_lst,
@@ -580,51 +546,28 @@ def add_menu_item():
 # 5*. Routing to show 'News & Promo' page
 @app.route('/restaurants/news_promo')
 def news_promo():
-    # query to get all 'price' records for sprcific restaurant id
-    prmo_rest_menu_item_lst = rest_ses.query(RestMenuItem).\
-                                  filter(RestMenuItem.comment != None).all()
-        
-    if prmo_rest_menu_item_lst:
-        # select all menu item id's and restaurant  ids from list of 'price' records
-        # for filtering
-        menu_items_ids = []
-        rest_ids = []
-        for item in prmo_rest_menu_item_lst:
-            # filter ids for menu items
-            if item.menu_item_id in menu_items_ids:
-                continue
-            else:
-                menu_items_ids.append(item.menu_item_id)
-            # filter ids for restaurants
-            if item.restaurant_id in rest_ids:
-                continue
-            else:
-                rest_ids.append(item.restaurant_id)
-        
-        # query to get all menu item records only for promo id (via price)
-        fltr_menu_items = rest_ses.query(MenuItem).\
-                                filter(MenuItem.id.in_(menu_items_ids)).all()
-        
-        # query to get all restaurants records only for promo id (via price)
-        fltr_restaurants = rest_ses.query(Restaurant).\
-                                filter(Restaurant.id.in_(rest_ids)).all()
-        
+    # select all menu and restaurant from RestMenuItem for filtering where 'comment' not None
+    all_promo_lst = rest_ses.query(RestMenuItem.restaurant_id, Restaurant.name, \
+                                   MenuItem.name, RestMenuItem.comment).\
+                             join(MenuItem).join(Restaurant).\
+                             filter(RestMenuItem.comment != None).\
+                             order_by(Restaurant.id, MenuItem.id).all()
+
+     # if 'promo' records are existed    
+    if all_promo_lst:
         # check logo image files and create list of dictionaries
-        fltr_restaurants_logo = []
-        for item in fltr_restaurants:
-            logo_file = item.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
+        all_promo_lst_logo = []
+        for item in all_promo_lst:
+            logo_file = item[1].lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
             # if logo not existed
             if not path.isfile('static/'+ logo_file):
                 logo_file = 'no_image.jpg'
-            fltr_restaurants_logo.append((item, logo_file))
-
+            all_promo_lst_logo.append((item, logo_file))  
     else:
-        fltr_menu_items = []
-        fltr_restaurants_logo = []
+          all_promo_lst_logo = []
 
-    return render_template('news_promo.html', mnu_itm_prs = prmo_rest_menu_item_lst,
-                           mnu_itms = fltr_menu_items, 
-                           rest_lst = fltr_restaurants_logo)    
+    return render_template('news_promo.html', promo_lst = all_promo_lst_logo)
+
     
 # 6*. Routing to show 'Contact us' page
 @app.route('/restaurants/contact_us')

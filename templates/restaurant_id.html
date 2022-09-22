@@ -66,36 +66,33 @@
 							</form>
 						</h4>
 						<h1>Our menu:</h1>
-						{% if mnu_itm_prs %}
-							{% for item in mnu_itm_prs %}
-								{% for menu in mnu_itms %}
-									{% if menu.id == item.menu_item_id %}
-										<h3>
-											<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{menu.id}}">{{menu.name}}</a>
-										</h3>
-										<p>{{menu.description}}</p>
-									{% endif %}
-								{% endfor %}
-								<p>Price: {{item.price}} rub</p>
-								{% if item.comment %}
-									<p>Comment: {{item.comment}}</p>
+						{% if menu_items %}
+							{% for (id, name, description, price, comment) in menu_items %}
+								<h3>
+									<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{id}}">{{name}}</a>
+								</h3>
+								<p>{{description}}</p>
+							
+								<p>Price: {{price}} rub</p>
+								{% if comment %}
+									<p>Comment: {{comment}}</p>
 								{% endif %}
 								<h4>
 									<!--
-									<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{item.menu_item_id}}/edit">Edit menu item at {{rest_item.name}}</a>
+									<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{id}}/edit">Edit menu item at {{rest_item.name}}</a>
 									<br>
-									<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{item.menu_item_id}}/delete">Delete menu item from {{rest_item.name}}</a>
+									<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{id}}/delete">Delete menu item from {{rest_item.name}}</a>
 									-->
 									<!-- form to load edit menu item form -->
 									<form action="{{ url_for('edit_menu_item_for_restaurant_id', 
 													 rst_id = 'rst_id' ~ rest_item.id, 
-													 mnu_id = 'mnu_id' ~ item.menu_item_id)}}" method = 'get'>
+													 mnu_id = 'mnu_id' ~ id)}}" method = 'get'>
 										<input type='submit' value="Edit price and comment">
 									</form>
 									<!-- form to load delete menu item form -->
 									<form action="{{ url_for('delete_menu_item_for_restaurant_id', 
 													 rst_id = 'rst_id' ~ rest_item.id, 
-													 mnu_id = 'mnu_id' ~ item.menu_item_id)}}" method = 'get'>
+													 mnu_id = 'mnu_id' ~ id)}}" method = 'get'>
 										<input type='submit' value="Delete item from '{{rest_item.name}}'">
 									</form>
 
