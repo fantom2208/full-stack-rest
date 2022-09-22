@@ -3,6 +3,9 @@
 database/README.txt
 database/__pycache__
 
+static/panda_garden.jpg
+database/back_restaurantmenu.db
+
 
 full_stack.txt
 flask.txt
