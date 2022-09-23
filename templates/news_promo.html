@@ -41,7 +41,7 @@
 					{% if promo_lst %}
 						{% set ns = namespace(prev_rest_id = None) %}						
 						{% for (item, logo_name) in promo_lst %}    
-							{% set (rest_id, rest_name, mnu_name, cmnt) = item %}
+							{% set (rest_name, mnu_name, price, comment, rest_id) = item %}
 							
 							{% if rest_id != ns.prev_rest_id %}
 								{% if ns.prev_rest_id != None %}
@@ -49,7 +49,7 @@
 									<br>
 								{% endif %}	
 
-								<img src={{url_for('static', filename = logo_name)}} width="120" alt="Restaurant logo">
+								<img src={{url_for("static", filename = logo_name)}} width="120" alt="Restaurant logo">
 								<!--
 								<br>
 								<span> {rest_item.description} </span>
@@ -57,12 +57,12 @@
 								-->			
 							{% endif %}
 							
-							<h3>{{mnu_name}}</h3>
+							<h3>{{ mnu_name }}</h3>
 							<!--
 							<p>{menu.description}</p>
 							<p>Price: {item.price} rub</p>
 							-->
-							<p>Promo: {{cmnt}}</p>
+							<p>Promo: {{ comment }}</p>
 							{% set ns.prev_rest_id = rest_id %}
 						{% endfor %}
 						<h4> <a href="/restaurants/rst_id{{ns.prev_rest_id}}">Visit us now!!!</a></h4>

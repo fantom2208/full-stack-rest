@@ -1,6 +1,6 @@
 
 # import flask object and create instance
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 
 # database imports
 # Connection to DB and adding information in tables via script
@@ -63,8 +63,35 @@ def upd_item_attr(add_item, item_dic):
     return add_item
 
 
+# method to update (not empty) item attributs via form dictionary
+def touple_to_dict(keys, tpl_val):
+    dict = {}
+    idx = 0
+    tpl_val_len = len(tpl_val)
+
+    for key in keys:
+        if key == '-obj-':                                  # if key is object
+            if dict:                                        # if already not empty dic
+                obj_items = tpl_val[idx].serialize
+                for (o_key, o_val) in obj_items.items():    # hanbdle by object attributes
+                    dict[o_key] = o_val
+            else:                                           # if  empty dic
+                 dict = tpl_val[idx].serialize              # set all object attributes
+            idx += 1    
+        else:                                               # key is not object
+            if idx < tpl_val_len:                           # not all touple values
+                dict[key] = tpl_val[idx]
+                idx += 1
+            else:                                           # all touple values used - empty vals
+                dict[key] = '-'
+
+    return dict
+
+
 # 1. Routing for main page - all restaurants list
+
 @app.route('/')
+@app.route('/api.restaurants/')
 @app.route('/restaurants/')
 def restaurants():
     # query to get all restaurants
@@ -79,7 +106,14 @@ def restaurants():
             logo_file = 'no_image.jpg'
         rest_rec_logo.append((item, logo_file))
 
-    return render_template('restaurants.html', rest_items = rest_rec_logo)
+    # responce: HTML or JSON API
+    if 'api.restaurants' in request.path:      # API responce
+        RestaurantsJSON = [item.serialize for item in rest_all_rec]
+        responce = {'responce type' : 'list of restaurants',
+                    'restaurants': RestaurantsJSON }
+        return jsonify( responce )
+    else:                                       # HTML responce
+        return render_template('restaurants.html', rest_items = rest_rec_logo)
 
     
 # 1.1. Routing to add restaurant into list
@@ -114,6 +148,7 @@ def add_restaurant():
 # 2. Routing for restaurant info and list of its menu items
 # parametrs:
 #  - rst_id is path, syntax: rst_idNN where id = NN
+@app.route('/api.restaurants/<string:rst_id>/')
 @app.route('/restaurants/<string:rst_id>/')
 def restaurant_id(rst_id):
     #get restaurant id value
@@ -129,14 +164,28 @@ def restaurant_id(rst_id):
         logo_file = 'no_image.jpg' 
 
     # select all menu items and prices for restaurant id = rst_id_val
-    rest_menu_items_by_id = rest_ses.query(MenuItem.id, MenuItem.name, MenuItem.description,
+    rest_menu_items_by_id = rest_ses.query(MenuItem,
                                            RestMenuItem.price, RestMenuItem.comment).\
                                      join(MenuItem).\
                                      filter(RestMenuItem.restaurant_id == rst_id_val).all()
     
-    return render_template('restaurant_id.html', rest_item = rest_by_id,
-                            menu_items = rest_menu_items_by_id, 
-                            logo_name = logo_file)  
+    # responce: HTML or JSON API
+    if 'api.restaurants' in request.path:      # API responce
+        RestaurantJSON = rest_by_id.serialize 
+
+        keys = ['-obj-', 'price', 'promo comment']
+        MenuItemsJSON = []
+        for item in rest_menu_items_by_id:
+            MenuItemsJSON.append(touple_to_dict(keys, item))
+
+        responce = {'responce type' : 'restaurant menu',
+                    'menu items': MenuItemsJSON,
+                    'restaurant info' : RestaurantJSON }
+        return jsonify( responce )
+    else:                                       # HTML responce
+        return render_template('restaurant_id.html', rest_item = rest_by_id,
+                                menu_items = rest_menu_items_by_id, 
+                                logo_name = logo_file)  
     
 
 # 2.1. Routing to add menu item to specific restaurant
@@ -375,7 +424,7 @@ def delete_restaurant_id(rst_id):
 @app.route('/restaurants/<string:rst_id>/filter')
 def filter_restaurant_id(rst_id):
     return '2.6*. Returning form to filter reataurant with id: ' + rst_id[6:]
-
+    
 
 # 3*. Routing for menu item info
 # parametrs:
@@ -485,6 +534,7 @@ def delete_menu_item_id(mnu_id):
 
 
 # 4*. Routing for list of all menu items
+@app.route('/api.restaurants/menu_items/')
 @app.route('/restaurants/menu_items/')
 @app.route('/restaurants/menu_items/<string:rst_id>/add')
 def menu_items(rst_id = None):   
@@ -515,10 +565,17 @@ def menu_items(rst_id = None):
         rst_itm = None
         # query to get all menu items
         menu_items_all_rec = rest_ses.query(MenuItem).all() 
-                       
-        return render_template('menu_items.html', menu_items = menu_items_all_rec,
-                                rest = rst_itm) 
 
+        # responce: HTML or JSON API
+        if 'api.restaurants' in request.path:      # API responce
+            MenuItemsJSON = [item.serialize for item in menu_items_all_rec]
+            responce = {'responce type' : 'list of menu items',
+                        'menu items': MenuItemsJSON}
+            return jsonify( responce )
+        else:                                       # HTML responce
+            return render_template('menu_items.html', menu_items = menu_items_all_rec,
+                                    rest = rst_itm) 
+     
 
 # 4.1*. Routing to add new menu item
 @app.route('/restaurants/menu_items/add', methods=['GET', 'POST'])
@@ -544,11 +601,13 @@ def add_menu_item():
 
 
 # 5*. Routing to show 'News & Promo' page
+@app.route('/api.restaurants/news_promo')
 @app.route('/restaurants/news_promo')
 def news_promo():
     # select all menu and restaurant from RestMenuItem for filtering where 'comment' not None
-    all_promo_lst = rest_ses.query(RestMenuItem.restaurant_id, Restaurant.name, \
-                                   MenuItem.name, RestMenuItem.comment).\
+    all_promo_lst = rest_ses.query(Restaurant.name, MenuItem.name, \
+                                   RestMenuItem.price, RestMenuItem.comment, \
+                                   RestMenuItem.restaurant_id).\
                              join(MenuItem).join(Restaurant).\
                              filter(RestMenuItem.comment != None).\
                              order_by(Restaurant.id, MenuItem.id).all()
@@ -558,7 +617,7 @@ def news_promo():
         # check logo image files and create list of dictionaries
         all_promo_lst_logo = []
         for item in all_promo_lst:
-            logo_file = item[1].lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
+            logo_file = item[0].lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
             # if logo not existed
             if not path.isfile('static/'+ logo_file):
                 logo_file = 'no_image.jpg'
@@ -566,7 +625,18 @@ def news_promo():
     else:
           all_promo_lst_logo = []
 
-    return render_template('news_promo.html', promo_lst = all_promo_lst_logo)
+    # responce: HTML or JSON API
+    if 'api.restaurants' in request.path:      # API responce
+        keys = ['restaurant', 'menu item', 'price', 'promo comment']
+        MenuItemsJSON = []
+        for item in all_promo_lst:
+            MenuItemsJSON.append(touple_to_dict(keys, item))
+
+        responce = {'responce type' : 'list of promo menu items',
+                    'promo items': MenuItemsJSON}
+        return jsonify( responce )
+    else:                                       # HTML responce
+        return render_template('news_promo.html', promo_lst = all_promo_lst_logo)
 
     
 # 6*. Routing to show 'Contact us' page
@@ -584,7 +654,6 @@ if __name__ == '__main__':
     app.debug = True
     # run server at port 5000
     app.run(host='0.0.0.0', port=5000)
-
 
 
 

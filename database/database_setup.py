@@ -37,12 +37,12 @@ class Restaurant(Base):
     
     # We added this serialize function to be able to send JSON objects
     # in a serializable format
-    #@property
-    #def serialize(self):
-    #    return {'id'             : self.id,
-    #            'name'           : self.name,
-    #            'description'    : self.description,
-    #            'address'        : self.address}
+    @property
+    def serialize(self):
+        return {'id'             : self.id,
+                'name'           : self.name,
+                'description'    : self.description,
+                'address'        : self.address}
 
 
 ## class MenuItem 
@@ -64,14 +64,14 @@ class MenuItem(Base):
     
     # We added this serialize function to be able to send JSON objects
     # in a serializable format
-    #@property
-    #def serialize(self):
-    #    return {'id'             : self.id,
-    #            'name'           : self.name,
-    #            'description'    : self.description,
-    #            'course'         : self.course,
-    #            'weight'         : self.weight,
-    #            'content'        : self.content}
+    @property
+    def serialize(self):
+        return {'id'             : self.id,
+                'name'           : self.name,
+                'description'    : self.description,
+                'course'         : self.course,
+                'weight'         : self.weight,
+                'content'        : self.content}
 
 ## class RestaurantMenuItem 
 class RestMenuItem(Base):
@@ -97,13 +97,13 @@ class RestMenuItem(Base):
 
     # We added this serialize function to be able to send JSON objects
     # in a serializable format
-    #@property
-    #def serialize(self):
-    #    return {'id'             : self.id,
-    #            'restaurant_id'  : self.restaurant_id,
-    #            'menu_item_id'   : self.menu_item_id,
-    #            'price'          : self.price,
-    #            'comment'        : self.comment}
+    @property
+    def serialize(self):
+        return {'id'             : self.id,
+                'restaurant_id'  : self.restaurant_id,
+                'menu_item_id'   : self.menu_item_id,
+                'price'          : self.price,
+                'comment'        : self.comment}
 # end of CONFIGURATION
 
 def create_db():
