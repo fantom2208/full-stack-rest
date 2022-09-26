@@ -4,18 +4,24 @@
 <head>
 	<meta charset="utf-8">
   	<title>Nice food restaurants</title>
-	<!--
-	<link href={{ url_for('static', filename='styles.css') }} rel=stylesheet>
-	-->
+	<link href={{ url_for("static", filename="styles.css") }} 
+		  rel=stylesheet>
+	<link href={{url_for("static", filename ="eat_and_rest.png")}} 
+		  rel="icon">
 </head>
+
 <body>
 	<header>
-		<p>--- start of header ---</p>
+
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
 				<div>
 			  		<span>
-						<img class="logo" src={{url_for('static', filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<img class="logo" 
+							 src={{url_for("static", filename ="eat_and_rest.jpg")}} 
+							 width="80"
+							 height="80" 
+							 alt="Restaurants logo">
 						<div class="logo_name">
 							<h2>Eat and Rest</h2>
 						</div>
@@ -30,63 +36,69 @@
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of header ---</p>
+
 	</header>
 
 	<section>
 		<div class="container">
 			<div class="portfolio">
-				<form action="{{ url_for('add_restaurant')}}" method = 'post'>
+				<h2>Input data for new restaurant:</h2>
+				<form style="display: inline" 
+					  action="{{ url_for('add_restaurant')}}" 
+					  method="post">
 					<dl>
 						<dt>Name:</dt>
-						<dd><input required type ='text' size='30' name='name'></dd>
+						<dd><input required 
+								   type="text" 
+								   size="40" 
+								   name="name"></dd>
 						
 						<dt>Description:</dt>
-						<dd><textarea required name = 'description' rows='10' cols='80'></textarea></dd>
+						<dd><textarea required 
+									  name="description" 
+									  rows="5" 
+									  cols="80"></textarea></dd>
 					
 						<dt>Address:</dt>
-						<dd><input required type ='text' size='30' name='address'></dd>						
+						<dd><input required 
+								   type="text" 
+								   size="40" 
+								   name="address"></dd>						
 					</dl>
 		 
-					<input type='submit' name="add_button" value='Add restaurant'>
+					<input type="submit" 
+						   name="add_button" 
+						   value="Add restaurant">
 					<!--
-					<input type='submit' name="cancel_button" value='Cancel'>
+					<input type="submit" 
+						   name="cancel_button" 
+						   value="Cancel">
 					-->		 
 			  	</form>
 
-				<form action="{{ url_for('restaurants')}}" method = 'get'>
-					<input type='submit' value='Cancel'>
+				<form style="display: inline" 
+					  action="{{ url_for('restaurants')}}" 
+					  method = "get">
+					<input type="submit" 
+						   value="Cancel">
 				</form>
             </div>
 		</div>
 	</section>
 
 	<footer>
-		<p>--- start of footer ---</p>
+
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
  				<div>
 			  		<ul class="menu">
-						<!--
-                        <li>
-							<a href="/restaurants/">Back to restaurants</a>
-						</li>
-						<li>
-							<a href="/restaurants/menu_items/">Back to all menu items</a>
-						</li>
-						<li>Reserved</li>
 						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						-->
 						<li><a href="/restaurants/contact_us">Contact us</a></li>
 			  		</ul>
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of footer ---</p>
+
 	</footer>
 
 </body>

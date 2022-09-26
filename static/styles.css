@@ -1,0 +1,180 @@
+body {
+  font-family: 'Open Sans', sans-serif;
+  background: #ddd;
+  margin: 0;
+  /*padding - отступы от краев, краткая форма записи свойств, 
+  чтобы не писать отдельное правило для каждой стороны */
+  padding: 0;
+  /*padding - поля для элемента, краткая форма записи свойств, 
+  чтобы не писать отдельное правило для каждой стороны */
+}
+
+header {
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  color: #697681;
+  background: white;
+  height: 100px;
+  padding: 10px;
+}
+section {
+  padding: 15px;
+}
+footer {
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  color: #697681;
+  background: white;
+  height: 100px;
+  padding: 10px;
+}
+
+/* styles for restaurant list */
+.container {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.portfolio {
+/* empty */
+  width: 67%;
+}
+.portfolio_half {
+  /* empty */
+    width: 50%;
+  }
+
+
+.item {
+  clear: both;
+	background: #ddd;
+  border-radius: 25px;
+}
+
+.div_post { 
+	border: 1px solid #999;
+  padding: 10px 10px ;
+  margin: 10px 10px; 
+}
+
+.item img {
+	float: left;
+  /*height: 260px;
+  width: 260px;*/
+	border-radius: 10%;
+  margin-right: 20px;
+}
+
+.item_span {
+	display: table-cell;
+	vertical-align: top;
+  font-size: larger;
+	height: 145px;
+}
+
+.item_menu_span {
+	display: table-cell;
+	vertical-align: top;
+  font-size: larger;
+  height: 50px;
+}
+
+.item_promo_span {
+	display: table-cell;
+	vertical-align: top;
+  width: 50%;
+  height: 25px;
+}
+
+
+
+.support_italic_right {
+  font-style: italic; 
+  text-align: right;
+  padding-right: 40px;
+}
+
+.support_italic {
+  font-style: italic; 
+  text-align: left;
+  padding-left: 20px;
+}
+
+.reject_red {
+  color: red;
+}
+
+.rconfirm_green {
+  color: green;
+}
+
+/* styles for input form */
+form {
+  margin: 5px;
+  width: 67%;
+  /*height: 300px;*/
+}
+
+input, textarea {
+  font-size: 15px;
+  font-weight: bolder;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+
+
+/* styles for header and footer: header mage + logo*/
+* {
+  box-sizing: border-box;
+}
+
+.flex-container {
+  display: flex;
+  position: relative;
+}
+.vertical-centerer {
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+}
+.space-between {
+  justify-content: space-between;
+}
+
+.logo {
+  width: 70px;
+  height: 70px;
+  display: inline-block;
+  position: absolute;
+  top: 2%;
+}
+
+.logo_name {
+  display: inline-block;
+  margin-left: 85px;
+  text-align: top;
+}
+
+.menu {
+  display: inline-block;
+  list-style: none;
+  list-style-type: none;
+}
+.menu > li {
+  display: inline;
+  margin: 10px;
+}
+
+.menu_right {
+  display: inline-block;
+  list-style: none;
+  list-style-type: none;
+  align-items: right;
+  padding-right: 50px;
+}
+.menu_right > li {
+  display: inline;
+  margin: 10px;
+}

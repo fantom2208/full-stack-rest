@@ -4,18 +4,24 @@
 <head>
 	<meta charset="utf-8">
   	<title>Nice food restaurants</title>
-	<!--
-	<link href={{ url_for('static', filename='styles.css') }} rel=stylesheet>
-	-->
+	<link href={{ url_for("static", filename="styles.css") }} 
+		  rel=stylesheet>
+	<link href={{url_for("static", filename ="eat_and_rest.png")}} 
+		  rel="icon">
 </head>
+
 <body>
 	<header>
-		<p>--- start of header ---</p>
+		
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
 				<div>
 			  		<span>
-						<img class="logo" src={{url_for('static', filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<img class="logo" 
+						     src={{url_for("static", filename ="eat_and_rest.jpg")}} 
+							 width="80" 
+							 height="80"
+							 alt="Restaurants logo">
 						<div class="logo_name">
 							<h2>Eat and Rest</h2>
 						</div>
@@ -30,14 +36,14 @@
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of header ---</p>
+
 	</header>
 
 	<section>
 		<div class="container">
 			<div class="portfolio">
 				<h1>News and promo menu:</h1>
-				<div class="item div_post">
+				<!--<div class="item div_post">-->
 					{% if promo_lst %}
 						{% set ns = namespace(prev_rest_id = None) %}						
 						{% for (item, logo_name) in promo_lst %}    
@@ -45,61 +51,51 @@
 							
 							{% if rest_id != ns.prev_rest_id %}
 								{% if ns.prev_rest_id != None %}
-									<h4> <a href="/restaurants/rst_id{{ns.prev_rest_id}}">Visit us now!!!</a></h4>	
-									<br>
+										<h4> <a href="/restaurants/rst_id{{ns.prev_rest_id}}">Visit us now!!!</a></h4>	
+									</span>
+								</div>
+									<!--<br>-->
 								{% endif %}	
 
-								<img src={{url_for("static", filename = logo_name)}} width="120" alt="Restaurant logo">
-								<!--
-								<br>
-								<span> {rest_item.description} </span>
-								<p> {rest_item.address} </p>
-								-->			
+								<div class="item div_post">
+									<img src={{url_for("static", filename = logo_name)}}
+										 width="160" 
+										 height="160" 
+										 alt="Restaurant logo">
+		
 							{% endif %}
-							
-							<h3>{{ mnu_name }}</h3>
-							<!--
-							<p>{menu.description}</p>
-							<p>Price: {item.price} rub</p>
-							-->
-							<p>Promo: {{ comment }}</p>
+									<span class="item_promo_span">
+										<h3>{{ mnu_name }}</h3>
+										<p>
+											<div>Promo: {{ comment }} </div>
+											<div class="support_italic_right">Price: {{price}} rub</div>
+										</p>
 							{% set ns.prev_rest_id = rest_id %}
 						{% endfor %}
-						<h4> <a href="/restaurants/rst_id{{ns.prev_rest_id}}">Visit us now!!!</a></h4>
-					{% else %}
+										<h4> <a href="/restaurants/rst_id{{ns.prev_rest_id}}">Visit us now!!!</a></h4>
+									</span>
+								</div>
+						{% else %}
 						<h3>No news and promo yet ...</h3>
 					{% endif %}
-				</div>
+				<!--</div>-->
             </div>
 		</div>
 	</section>
 
 	<footer>
-		<p>--- start of footer ---</p>
+
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
  				<div>
 			  		<ul class="menu">
-						<!--
-                        <li>
-							<a href="/restaurants">Back to restaurants</a>
-						</li>
-						<li>
-							<a href="/restaurants/menu_items/">Back to all menu items</a>
-						</li>
-						<li>Reserved</li>
 						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						-->
 						<li><a href="/restaurants/contact_us">Contact us</a></li>
 			  		</ul>
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of footer ---</p>
+
 	</footer>
 
 </body>

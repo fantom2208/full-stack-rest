@@ -4,18 +4,24 @@
 <head>
 	<meta charset="utf-8">
   	<title>Nice food restaurants</title>
-	<!--
-	<link href={{ url_for('static', filename='styles.css') }} rel=stylesheet>
-	-->
+	<link href={{ url_for("static", filename="styles.css") }} 
+		  rel=stylesheet>
+	<link href={{url_for("static", filename ="eat_and_rest.png")}} 
+		  rel="icon">
 </head>
+
 <body>
 	<header>
-		<p>--- start of header ---</p>
+
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
 				<div>
 			  		<span>
-						<img class="logo" src={{url_for('static', filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<img class="logo" 
+							 src={{url_for("static", filename ="eat_and_rest.jpg")}} 
+							 width="80" 
+							 height="80"
+							 alt="Restaurants logo">
 						<div class="logo_name">
 							<h2>Eat and Rest</h2>
 						</div>
@@ -30,109 +36,116 @@
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of header ---</p>
+
 	</header>
 
 	<section>
 		<div class="container">
-			<div class="portfolio">
-				<h1>{{rest_item.name}}</h1>
-                	<div class="item div_post">
-					    <img src={{url_for('static', filename = logo_name )}} width="270" alt="Restaurant logo">
-                        <br>
-						<span> {{rest_item.description}} </span>
-					    <p> {{rest_item.address}} </p>
-						<h4>
-							<!--
-							<a href="/restaurants/rst_id{{rest_item.id}}/edit">Edit {{rest_item.name}} info</a>
-							<br>
-							<a href="/restaurants/rst_id{{rest_item.id}}/delete">Delete {{rest_item.name}} and its menu</a>
-							-->
-							<!-- form to load edit menu item form -->
-							<form action="{{ url_for('menu_items', 
-											 rst_id = 'rst_id' ~ rest_item.id)}}" method = 'get'>
-								<input type='submit' value="Add new item to '{{rest_item.name}}'">
-							</form>
-							
-							<!-- form to load edit menu item form -->
-							<form action="{{ url_for('edit_restaurant_id', 
-										 	 rst_id = 'rst_id' ~ rest_item.id)}}" method = 'get'>
-								<input type='submit' value="Edit '{{rest_item.name}}' info">
-							</form>
-							<!-- form to load delete menu item form -->
-							<form action="{{ url_for('delete_restaurant_id', 
-											 rst_id = 'rst_id' ~ rest_item.id)}}" method = 'get'>
-								<input type='submit' value="Delete '{{rest_item.name}}' and its menu">
-							</form>
-						</h4>
-						<h1>Our menu:</h1>
-						{% if menu_items %}
-							{% for (item, price, comment) in menu_items %}
-								<h3>
-									<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{item.id}}">{{item.name}}</a>
-								</h3>
-								<p>{{item.description}}</p>
-							
-								<p>Price: {{price}} rub</p>
-								{% if comment %}
-									<p>Comment: {{comment}}</p>
-								{% endif %}
-								<h4>
-									<!--
-									<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{id}}/edit">Edit menu item at {{rest_item.name}}</a>
-									<br>
-									<a href="/restaurants/rst_id{{rest_item.id}}/mnu_id{{id}}/delete">Delete menu item from {{rest_item.name}}</a>
-									-->
-									<!-- form to load edit menu item form -->
-									<form action="{{ url_for('edit_menu_item_for_restaurant_id', 
-													 rst_id = 'rst_id' ~ rest_item.id, 
-													 mnu_id = 'mnu_id' ~ item.id)}}" method = 'get'>
-										<input type='submit' value="Edit price and comment">
-									</form>
-									<!-- form to load delete menu item form -->
-									<form action="{{ url_for('delete_menu_item_for_restaurant_id', 
-													 rst_id = 'rst_id' ~ rest_item.id, 
-													 mnu_id = 'mnu_id' ~ item.id)}}" method = 'get'>
-										<input type='submit' value="Delete item from '{{rest_item.name}}'">
-									</form>
+			<div class="portfolio_half">
+				<h2>{{rest_item.name}}</h2>
+                <div class="item div_post">
+					<img src={{url_for("static", filename = logo_name )}} 
+						 width="260" 
+						 height="260" 
+						 alt="Restaurant logo">
+					<p>Description:</p>				
+					<span class="item_span">{{ rest_item.description }} </span>
+					<p class="support_italic_right"> {{ rest_item.address }} </p>
+					<br>					
+					<p>										
+						<!-- form to load edit menu item form -->
+						<form style="display: inline" 
+							  action="{{ url_for('edit_restaurant_id', 
+										 rst_id = 'rst_id' ~ rest_item.id)}}" 
+							  method="get">
+							<input type="submit" 
+							       value="Edit '{{rest_item.name}}' info">
+						</form>
+						
+						<!-- form to load delete menu item form -->
+						<form style="display: inline" 
+							  action="{{ url_for('delete_restaurant_id', 
+										 rst_id = 'rst_id' ~ rest_item.id)}}" 
+							  method="get">
+							<input type="submit" 
+							       value="Delete '{{rest_item.name}}' and its menu">
+						</form>
+						
+						<!-- form to load edit menu item form -->
+						<form action="{{ url_for('menu_items', 
+										 rst_id = 'rst_id' ~ rest_item.id)}}" 
+							  method="get">
+		   					<input type="submit" 
+							       value="Add new item to '{{rest_item.name}}'">
+	   					</form>						
+					</p>
+				</div>	
+			</div>
 
-								</h4>
-								<br>
-							{% endfor %}
-						{% else %}
-							<h3> No menu list yet... </h3>
-						{% endif %}
-					</div>
+			<div class="portfolio_half">		
+				<h2>Our menu:</h2>
+				<div class="item div_post">
+					{% if menu_items %}
+						{% for (item, price, comment) in menu_items %}
+							<h3>
+								<a href="{{ url_for('menu_item_id', 
+											rst_id = 'rst_id' ~ rest_item.id, 
+											mnu_id = 'mnu_id' ~ item.id)}}">{{ item.name }}</a> 
+							</h3>
+							<p>
+								<div>
+								{{ item.description }}							
+								{% if comment %}
+									<br>
+									{{ comment }}
+								{% endif %}
+								</div>
+								<div class="support_italic_right"> {{ price }} rub</div>
+								<div>
+									<!-- form to load edit menu item form -->
+									<form style="display: inline" 
+									      action="{{ url_for('edit_menu_item_for_restaurant_id', 
+													 rst_id = 'rst_id' ~ rest_item.id, 
+													 mnu_id = 'mnu_id' ~ item.id)}}" 
+										  method="get">
+										<input type="submit" 
+											   value="Edit price and comment">
+									</form>
+									
+									<!-- form to load delete menu item form -->
+									<form style="display: inline" 
+											  action="{{ url_for('delete_menu_item_for_restaurant_id', 
+														rst_id = 'rst_id' ~ rest_item.id, 
+														mnu_id = 'mnu_id' ~ item.id)}}" 
+											  method="get">
+										<input type='submit' 
+											   value="Delete item from '{{rest_item.name}}'">
+									</form>									
+								</div>
+							</p>							
+						{% endfor %}
+					{% else %}
+						<h3> No menu list yet... </h3>
+					{% endif %}
+					
+				</div>
             </div>
 		</div>
 	</section>
 
 	<footer>
-		<p>--- start of footer ---</p>
+
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
  				<div>
 			  		<ul class="menu">
-						<!--
-                        <li>
-							<a href="/restaurants">Back to restaurants</a>
-						</li>
-						<li>
-							<a href="/restaurants/rst_id{{rest_item.id}}/add">Add menu item to {{rest_item.name}}</a>
-						</li>
-						<li>Reserved</li>
 						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						-->
 						<li><a href="/restaurants/contact_us">Contact us</a></li>
 			  		</ul>
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of footer ---</p>
+
 	</footer>
 
 </body>

@@ -4,18 +4,24 @@
 <head>
 	<meta charset="utf-8">
   	<title>Nice food restaurants</title>
-	<!--
-	<link href={{ url_for('static', filename='styles.css') }} rel=stylesheet>
-	-->
+	<link href={{ url_for("static", filename="styles.css") }} 
+		  rel=stylesheet>
+	<link href={{url_for("static", filename ="eat_and_rest.png")}} 
+		  rel="icon">
 </head>
+
 <body>
 	<header>
-		<p>--- start of header ---</p>
+
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
 				<div>
 			  		<span>
-						<img class="logo" src={{url_for('static', filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<img class="logo" 
+							 src={{url_for("static", filename ="eat_and_rest.jpg")}} 
+							 width="80" 
+							 height="80"
+							 alt="Restaurants logo">
 						<div class="logo_name">
 							<h2>Eat and Rest</h2>
 						</div>
@@ -30,57 +36,51 @@
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of header ---</p>
+
 	</header>
 
 	<section>
 		<div class="container">
 			<div class="portfolio">
-				<h1>{{ menu_item.name }}</h1>
-				{% if rest_lst %}
-					<p>'{{ menu_item.name }}' is used in menu of following restarunts: </p>
-					{% for (id, name) in rest_lst %}
-						<p> - {{ name }}</p>
-					{% endfor %}
-					<p> It will be deleted from restaurants and list of menu items. </p>
-				{% else %}
-					<p>'{{ menu_item.name }}' will be deleted from list of menu items. </p>
-				{% endif %}
-				<h3> Are you sure you want to delete '{{ menu_item.name }}'? </h3>
-     			<form action="{{ url_for('delete_menu_item_id', mnu_id = 'mnu_id' ~ menu_item.id)}}" method = 'post'>
-					<input type='submit' name="delete_button" value='Delete menu item'>
-					<input type='submit' name="cancel_button" value='Cancel'>
+				<div class="item div_post">
+					<h2>Delete {{ menu_item.name }}: </h2>				
+					{% if rest_lst %}
+						<p>Item '{{ menu_item.name }}' is used in menu of following restarunts: </p>
+						{% for (id, name) in rest_lst %}
+							<p class="support_italic"> - {{ name }}</p>
+						{% endfor %}
+						<p> It will be deleted from restaurants and list of menu items. </p>
+					{% else %}
+						<p>'{{ menu_item.name }}' will be deleted from list of menu items. </p>
+					{% endif %}
+				</div>
+				<h3 class="reject_red"> Are you sure you want to delete '{{ menu_item.name }}'? </h3>
+     			<form action="{{ url_for('delete_menu_item_id', mnu_id = 'mnu_id' ~ menu_item.id)}}"
+					  method = 'post'>
+					<input type="submit" 
+						   name="delete_button" 
+						   value="Delete menu item">
+					<input type="submit" 
+						   name="cancel_button" 
+						   value="Cancel">
      			</form>
             </div>
 		</div>
 	</section>
 
 	<footer>
-		<p>--- start of footer ---</p>
+
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
  				<div>
 			  		<ul class="menu">
-						<!--
-                        <li>
-							<a href="/restaurants/">Back to restaurants</a>
-						</li>
-						<li>
-							<a href="/restaurants/menu_items/">Back to all menu items</a>
-						</li>
-						<li>Reserved</li>
 						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						-->
 						<li><a href="/restaurants/contact_us">Contact us</a></li>
 			  		</ul>
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of footer ---</p>
+
 	</footer>
 
 </body>

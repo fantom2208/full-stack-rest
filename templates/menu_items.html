@@ -4,18 +4,24 @@
 <head>
 	<meta charset="utf-8">
   	<title>Nice food restaurants</title>
-	<!--
-	<link href={{ url_for('static', filename='styles.css') }} rel=stylesheet>
-	-->
+	<link href={{ url_for("static", filename="styles.css") }} 
+		  rel=stylesheet>
+	<link href={{url_for("static", filename ="eat_and_rest.png")}} 
+		  rel="icon">
 </head>
+
 <body>
 	<header>
-		<p>--- start of header ---</p>
+		
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
 				<div>
 			  		<span>
-						<img class="logo" src={{url_for("static", filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<img class="logo" 
+							 src={{url_for("static", filename ="eat_and_rest.jpg")}} 
+							 width="80"
+							 height="80" 
+							 alt="Restaurants logo">
 						<div class="logo_name">
 							<h2>Eat and Rest</h2>
 						</div>
@@ -30,7 +36,7 @@
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of header ---</p>
+
 	</header>
 
 	<section>
@@ -38,44 +44,45 @@
 			<div class="portfolio">
 				{% if menu_items %}
 					{% if rest %}
-						<h1>Select menu items to add to '{{rest.name}}' restaurant:</h1>
+						<h2>Select menu items to add to '{{ rest.name }}' restaurant:</h2>
 					{% else %}
-						<h1>List of all menu items:</h1>
+						<h2>List of all menu items:</h2>
 					{% endif %}
 
 					{% for item in menu_items %}
 						<div class="item div_post">
 							{% if rest %}
-								<h2>{{item.id}}. {{item.name}}</h2>
+								<h2> {{ item.name }}</h2>
 								<p>
-									<span> {{item.description}} </span>
+									<span class="item_menu_span"> {{ item.description }} </span>
 								</p>
 								
 								<!-- form to load add menu item to rataurant form -->
 								<form action="{{ url_for('add_menu_item_to_restaurant_id', 
 												rst_id = 'rst_id' ~ rest.id,
-												mnu_id = 'mnu_id' ~ item.id )}}" method = 'get'>
-									<input type='submit' value='Add to restaurant menu'>
+												mnu_id = 'mnu_id' ~ item.id )}}" 
+									  method="get">
+									<input type="submit" 
+										   value="Add to restaurant menu">
 								</form>
 							{% else %}
 								<h2>
-									<a href="/restaurants/menu_items/mnu_id{{item.id}}">{{item.id}}. {{item.name}}</a> 
+									<a href="/restaurants/menu_items/mnu_id{{ item.id }}">{{item.name}}</a> 
 								</h2>
 								<p>
-									<span> {{item.description}} </span>
+									<span class="item_menu_span"> {{ item.description }} </span>
 								</p>
 							{% endif %}							
-							
+							<p class="support_italic"> Cource: {{ item.course }} </p>
 							<!--
-							<p> {{item.course}} </p>
 							{% if item.weight %}
-								<p> Dish weight: {{item.weight}} gr.</p>
+								<p> Dish weight: {{ item.weight }} gr.</p>
 							{% endif %}
 							{% if item.content %}
-								<p> Content: {{item.content}} </p>
+								<p> Content: {{ item.content }} </p>
 							{% endif %}
 							-->
-							<br><br>
+							<!--<br><br>-->
 						</div>
 					{% endfor %}
 				{% else %}
@@ -90,13 +97,17 @@
 			{% if rest %}
 				<!-- form to cancell add new menu item  becouse all already existed -->
 				<form action="{{ url_for('restaurant_id', 
-								 rst_id = 'rst_id' ~ rest.id)}}" method = 'get'>
-					<input type='submit' value="Back to '{{rest.name}}'">
+								 rst_id = 'rst_id' ~ rest.id)}}" 
+					  method="get">
+					<input type="submit" 
+						   value="Back to '{{rest.name}}'">
 				</form>
 			{% else %}
 				<!-- form to load add new menu item form -->
-				<form action="{{ url_for('add_menu_item')}}" method = 'get'>
-					<input type='submit' value='Add new menu item'>
+				<form action="{{ url_for('add_menu_item')}}" 
+					  method="get">
+					<input type="submit" 
+						   value="Add new menu item">
 				</form>
 			{% endif %}	
 
@@ -104,31 +115,18 @@
 	</section>
 
 	<footer>
-		<p>--- start of footer ---</p>
+
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
  				<div>
 			  		<ul class="menu">
-						<!--
-						<li>
-							<a href="/restaurants/">Back to restaurants</a>
-						</li>						
-						<li>
-							<a href="/restaurants/menu_items/add">Add new menu item</a>
-						</li>
-						<li>Reserved</li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						-->
+						<li></li>
 						<li><a href="/restaurants/contact_us">Contact us</a></li>
 			  		</ul>
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of footer ---</p>
+
 	</footer>
 
 </body>

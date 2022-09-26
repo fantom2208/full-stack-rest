@@ -383,11 +383,12 @@ def delete_restaurant_id(rst_id):
                               filter(Restaurant.id == rst_id_val).one()
         
         # query to get price menu item with restaurant id 
-        rest_menu_items_qnt = rest_ses.query(RestMenuItem).\
-                                  filter(RestMenuItem.restaurant_id == rst_id_val).count()
+        rest_menu_items = rest_ses.query(RestMenuItem.menu_item_id, MenuItem.name ).\
+                                   join(MenuItem).\
+                                   filter(RestMenuItem.restaurant_id == rst_id_val).all()
         
         return render_template('delete_restaurant_id.html',  rest = rest_by_id, 
-                                mnu_itms_qnt = rest_menu_items_qnt)
+                                mnu_itms_qnt = rest_menu_items)
             
     if request.method == 'POST':
         if request.form.get('delete_button',0):
@@ -555,16 +556,17 @@ def menu_items(rst_id = None):
            
             # query to get menu items with ids not existed for restaurant id 
             no_menu_item_lst = rest_ses.query(MenuItem).\
-                                        filter(~MenuItem.id.in_(mnu_itms_ids)).all()
+                                        filter(~MenuItem.id.in_(mnu_itms_ids)).\
+                                        order_by(MenuItem.course).all()
         else:                   # no menu - select all menu items
-            no_menu_item_lst = rest_ses.query(MenuItem).all()
+            no_menu_item_lst = rest_ses.query(MenuItem).order_by(MenuItem.course).all()
        
         return render_template('menu_items.html', menu_items = no_menu_item_lst,
                                 rest = restaurant)      
     else:                           # show all menu items 
         rst_itm = None
         # query to get all menu items
-        menu_items_all_rec = rest_ses.query(MenuItem).all() 
+        menu_items_all_rec = rest_ses.query(MenuItem).order_by(MenuItem.course).all() 
 
         # responce: HTML or JSON API
         if 'api.restaurants' in request.path:      # API responce

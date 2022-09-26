@@ -3,19 +3,25 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-  	<title>Nice food restaurants</title>
-	<!--
-	<link href={{ url_for('static', filename='styles.css') }} rel=stylesheet>
-	-->
+  	<title>Nice food restaurants</title>	
+	<link href={{ url_for("static", filename="styles.css") }} 
+		  rel=stylesheet>
+	<link href={{url_for("static", filename ="eat_and_rest.png")}} 
+		  rel="icon">
 </head>
+
 <body>
 	<header>
-		<p>--- start of header ---</p>
+		
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
 				<div>
 			  		<span>
-						<img class="logo" src={{url_for('static', filename ="eat_and_rest.jpg")}} width="80" alt="Restaurants logo">
+						<img class="logo" 
+							 src={{url_for("static", filename ="eat_and_rest.jpg")}} 
+							 width="80" 
+							 height="80"
+							 alt="Restaurants logo">
 						<div class="logo_name">
 							<h2>Eat and Rest</h2>
 						</div>
@@ -30,23 +36,23 @@
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of header ---</p>
+
 	</header>
 
 	<section>
 		<div class="container">
 			<div class="portfolio">
-				<h1>Our restaurants</h1>
+				<h2>Our restaurants</h2>
                 {% if rest_items %}
 					{% for (item, logo_name) in rest_items %}
 						<div class="item div_post">
-							<a href="/restaurants/rst_id{{item.id}}">
-								<img src={{url_for('static', filename = logo_name )}} width="270" alt="Restaurant logo">
+							<a href="/restaurants/rst_id{{ item.id }}">
+								<img src={{url_for("static", filename = logo_name )}} width="260" height="260" alt="Restaurant logo">
 							</a>
-							<h2> {{item.name}} </h2>
-							<span> {{item.description}} </span>
-							<p> {{item.address}} </p>
-							<br><br>
+							<h2> {{ item.name }} </h2>
+							<span class="item_span"> {{ item.description }} </span>
+							<p class="support_italic_right"> {{ item.address }} </p>
+							<!--<br><br>-->
 						</div>
 					{% endfor %}
 				{% else %}
@@ -55,38 +61,25 @@
             </div>
 			
 			<!-- form to load add restaurant form -->
-			<form action="{{ url_for('add_restaurant')}}" method = 'get'>
-				<input type='submit' value='Add new restaurant'>
+			<form action="{{ url_for('add_restaurant')}}" method="get">
+				<input type="submit" value="Add new restaurant">
 			</form>
 		</div>
 	</section>
 
 	<footer>
-		<p>--- start of footer ---</p>
+
 		<div class="vertical-centerer flex-container">
 		  	<div class="flex-container space-between header-content">
  				<div>
 			  		<ul class="menu">
-						<!--
-                        <li>
-							<a href="/restaurants/add">Add new restaurant</a>
-						</li>
-						<li>
-							<a href="/restaurants/menu_items/add">Add new menu item</a>
-						</li>
-						<li>Reserved</li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						<li> </li>
-						-->
+						<li></li>
 						<li><a href="/restaurants/contact_us">Contact us</a></li>
 			  		</ul>
 				</div>
 		  	</div>
 		</div>
-		<p>--- end of footer ---</p>
+
 	</footer>
 
 </body>
