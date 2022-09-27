@@ -43,7 +43,7 @@
 		<div class="container">
 			<div class="portfolio">
 				<div class="item div_post">
-					<h1>{{ menu_item.name }}</h1>
+					<h2>{{ menu_item.name }}</h2>
 					<p class="item_menu_span"> Description: {{ menu_item.description }} </p>
 
 					<p> Cource: {{ menu_item.course }} </p>
@@ -72,13 +72,16 @@
 
 					<!-- form to load previous page -->
 					{% if rest_item %}	
-						<form action="{{ url_for('restaurant_id', rst_id = 'rst_id' ~ rest_item.id)}}" 
+						<!--action="{{ url_for('restaurant_id', 
+										 rst_id = 'rst_id' ~ rest_item.id )}}" -->
+						<form action="/restaurants/rst_id{{rest_item.id}}#m{{menu_item.id}}" 
 							  method="get">
 							<input type="submit" 
 								   value="Back to '{{rest_item.name}}'">
 						</form>
 					{% else %}
-						<form action="{{ url_for('menu_items')}}" 
+						<!--action="{{ url_for('menu_items')}}" -->
+						<form action="/restaurants/menu_items#m{{menu_item.id}}" 
 							  method="get">
 							<input type="submit" 
 								   value="Back to all menu items">

@@ -40,8 +40,9 @@
 	</header>
 
 	<section>
-		<div class="container">
+		<div class="container">			
 			<div class="portfolio_half">
+				<a class="navigation" id="top" href="#bottom">Move bottom...</a>
 				<h2>{{rest_item.name}}</h2>
                 <div class="item div_post">
 					<img src={{url_for("static", filename = logo_name )}} 
@@ -88,7 +89,8 @@
 					{% if menu_items %}
 						{% for (item, price, comment) in menu_items %}
 							<h3>
-								<a href="{{ url_for('menu_item_id', 
+								<a id="m{{ item.id }}"
+									href="{{ url_for('menu_item_id', 
 											rst_id = 'rst_id' ~ rest_item.id, 
 											mnu_id = 'mnu_id' ~ item.id)}}">{{ item.name }}</a> 
 							</h3>
@@ -100,7 +102,8 @@
 									{{ comment }}
 								{% endif %}
 								</div>
-								<div class="support_italic_right"> {{ price }} rub</div>
+								<div class="support_italic"> * {{ item.course }} </div>
+								<div class="support_italic_right"> = {{ price }} rub</div>
 								<div>
 									<!-- form to load edit menu item form -->
 									<form style="display: inline" 
@@ -129,7 +132,8 @@
 					{% endif %}
 					
 				</div>
-            </div>
+				<a class="navigation" id="bottom" href="#top">Move top...</a>
+            </div>			
 		</div>
 	</section>
 

@@ -42,7 +42,8 @@
 	<section>
 		<div class="container">
 			<div class="portfolio">
-				<h1>News and promo menu:</h1>
+				<a class="navigation" id="top" href="#bottom">Move bottom...</a>
+				<h2>News and promo menu:</h2>
 				<!--<div class="item div_post">-->
 					{% if promo_lst %}
 						{% set ns = namespace(prev_rest_id = None) %}						
@@ -79,6 +80,8 @@
 						<h3>No news and promo yet ...</h3>
 					{% endif %}
 				<!--</div>-->
+				<a class="navigation" id="bottom" href="#top">Move top...</a>
+				<br><br>
             </div>
 		</div>
 	</section>

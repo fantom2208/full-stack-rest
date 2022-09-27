@@ -42,6 +42,7 @@
 	<section>
 		<div class="container">
 			<div class="portfolio">
+				<a class="navigation" id="top" href="#bottom">Move bottom...</a>
 				<h2>Our restaurants</h2>
                 {% if rest_items %}
 					{% for (item, logo_name) in rest_items %}
@@ -58,6 +59,8 @@
 				{% else %}
 					<h3> No restaurants yet ...</h3>
 				{% endif%}
+				<a class="navigation" id="bottom" href="#top">Move top...</a>
+				<br><br>
             </div>
 			
 			<!-- form to load add restaurant form -->

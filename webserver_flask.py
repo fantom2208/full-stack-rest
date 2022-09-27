@@ -167,7 +167,8 @@ def restaurant_id(rst_id):
     rest_menu_items_by_id = rest_ses.query(MenuItem,
                                            RestMenuItem.price, RestMenuItem.comment).\
                                      join(MenuItem).\
-                                     filter(RestMenuItem.restaurant_id == rst_id_val).all()
+                                     filter(RestMenuItem.restaurant_id == rst_id_val).\
+                                     order_by(MenuItem.course).all()
     
     # responce: HTML or JSON API
     if 'api.restaurants' in request.path:      # API responce
@@ -230,10 +231,13 @@ def add_menu_item_to_restaurant_id(rst_id, mnu_id):
             rest_ses.add(new_rest_item)
             rest_ses.commit()       
            
-            return redirect(url_for('restaurant_id', rst_id = rst_id))
+            # redirecting to menu item fragment #mid
+            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val,mnu_id_val))
+            #return redirect(url_for('restaurant_id', rst_id = rst_id))
                    
         # cancel_button pressed - redirect to menu items page
         if request.form.get('cancel_button',0):
+
             return redirect(url_for('restaurant_id', rst_id = rst_id))
             
 
@@ -268,13 +272,13 @@ def edit_menu_item_for_restaurant_id(rst_id, mnu_id):
                                 rest_item = rest_menu_item )
         
     if request.method == 'POST':
+        #get restaurant id value
+        rst_id_val = int(rst_id[6:])
+        #get menu item id value
+        mnu_id_val = int(mnu_id[6:])
+
         # add_button pressed - add to DB
         if request.form.get('submit_button',0):
-            #get restaurant id value
-            rst_id_val = int(rst_id[6:])
-            #get menu item id value
-            mnu_id_val = int(mnu_id[6:])
-
             # query to get price menu item with restaurant id and  menu item id
             rest_menu_item = rest_ses.query(RestMenuItem).\
                                       filter(RestMenuItem.restaurant_id == rst_id_val).\
@@ -285,11 +289,14 @@ def edit_menu_item_for_restaurant_id(rst_id, mnu_id):
             rest_ses.add(rest_menu_item)
             rest_ses.commit()
             
-            return redirect(url_for('restaurant_id', rst_id = rst_id ))            
+            # redirecting to menu item fragment #mid
+            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val,mnu_id_val))
+            # return redirect(url_for('restaurant_id', rst_id = rst_id ))            
 
         if request.form.get('cancel_button',0):
-            return redirect(url_for('restaurant_id', rst_id = rst_id ))
-           
+            # redirecting to menu item fragment #mid
+            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val,mnu_id_val))
+            # return redirect(url_for('restaurant_id', rst_id = rst_id ))  
 
 # 2.3. Routing to delete menu item id for specific restaurant
 # parametrs:
@@ -315,13 +322,13 @@ def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
                                 rest = rest_by_id, item = menu_item_by_id )
         
     if request.method == 'POST':
+        #get restaurant id value
+        rst_id_val = int(rst_id[6:])
+        #get menu item id value
+        mnu_id_val = int(mnu_id[6:])
+
         # add_button pressed - add to DB
         if request.form.get('delete_button',0):
-            #get restaurant id value
-            rst_id_val = int(rst_id[6:])
-            #get menu item id value
-            mnu_id_val = int(mnu_id[6:])
-
             # query to get price menu item with restaurant id and  menu item id
             rest_menu_item = rest_ses.query(RestMenuItem).\
                                       filter(RestMenuItem.restaurant_id == rst_id_val).\
@@ -334,7 +341,9 @@ def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
             return redirect(url_for('restaurant_id', rst_id = rst_id ))
             
         if request.form.get('cancel_button',0):
-            return redirect(url_for('restaurant_id', rst_id = rst_id ))           
+            # redirecting to menu item fragment #mid
+            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val,mnu_id_val))
+            # return redirect(url_for('restaurant_id', rst_id = rst_id ))           
     
 
 # 2.4. Routing to edit restaurant info
@@ -593,9 +602,15 @@ def add_menu_item():
             # set new  object attributes and commit
             new_item =  set_item_attr(MenuItem(), request.form)
             rest_ses.add(new_item)
-            rest_ses.commit()            
+            rest_ses.commit()
+
+            # query to select item id
+            menu_by_id = rest_ses.query(MenuItem).\
+                                  filter(MenuItem.name == new_item.name).\
+                                  filter(MenuItem.description == new_item.description).one()          
             
-            return redirect(url_for('menu_items'))            
+            return redirect('/restaurants/menu_items#m{}'.format(menu_by_id.id))
+            #return redirect(url_for('menu_items'))            
 
         # cancel_button pressed - redirect to menu items page
         if request.form.get('cancel_button',0):

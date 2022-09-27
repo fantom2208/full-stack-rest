@@ -86,6 +86,10 @@ footer {
   height: 25px;
 }
 
+.navigation {
+  color: grey;
+  font-size: smaller;
+}
 
 
 .support_italic_right {

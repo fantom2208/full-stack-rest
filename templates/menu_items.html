@@ -42,6 +42,7 @@
 	<section>
 		<div class="container">
 			<div class="portfolio">
+				<a class="navigation" id="top" href="#bottom">Move bottom...</a>
 				{% if menu_items %}
 					{% if rest %}
 						<h2>Select menu items to add to '{{ rest.name }}' restaurant:</h2>
@@ -67,7 +68,8 @@
 								</form>
 							{% else %}
 								<h2>
-									<a href="/restaurants/menu_items/mnu_id{{ item.id }}">{{item.name}}</a> 
+									<a id="m{{item.id}}" 
+									   href="/restaurants/menu_items/mnu_id{{ item.id }}">{{item.name}}</a> 
 								</h2>
 								<p>
 									<span class="item_menu_span"> {{ item.description }} </span>
@@ -92,7 +94,9 @@
 						<h3>No menu items yet ... </h3>
 					{% endif %}
 				{% endif %}	
-				</div>
+				<a class="navigation" id="bottom" href="#top">Move top...</a>
+				<br><br>
+			</div>
 
 			{% if rest %}
 				<!-- form to cancell add new menu item  becouse all already existed -->
