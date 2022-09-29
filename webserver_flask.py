@@ -1,6 +1,7 @@
 
 # import flask object and create instance
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, \
+                  jsonify, flash
 
 # database imports
 # Connection to DB and adding information in tables via script
@@ -87,6 +88,12 @@ def touple_to_dict(keys, tpl_val):
 
     return dict
 
+# method to create dictionary for message flashing
+def gen_responce_dic(pos, clr, msg, id=None):
+    return {'position'  : pos,
+            'color'     : clr,
+            'message'   : msg,
+            'id'        : id }
 
 # 1. Routing for main page - all restaurants list
 
@@ -127,18 +134,30 @@ def add_restaurant():
     if request.method == 'POST':
         # add_button pressed - add to DB
         if request.form.get('add_button',0):
-
             # set new  object attributes and commit
             new_rest =  set_item_attr(Restaurant(), request.form)
-            rest_ses.add(new_rest)
-            rest_ses.commit()
-
-            # query to get added restaurant with namne and address to open page
-            rest_by_id = rest_ses.query(Restaurant).\
-                                  filter(Restaurant.name == new_rest.name).\
-                                  filter(Restaurant.address == new_rest.address).one()
             
-            return redirect(url_for('restaurant_id', rst_id = 'rst_id{}'.format(rest_by_id.id) ))
+            try:    # to add new item into DB
+                rest_ses.add(new_rest)
+                rest_ses.commit()
+
+                # query to get added restaurant with namne and address to open page
+                rest_by_id = rest_ses.query(Restaurant).\
+                                    filter(Restaurant.name == new_rest.name).\
+                                    filter(Restaurant.address == new_rest.address).one()
+                
+                resp_msg = gen_responce_dic('bottom','confirm_green',
+                                            '* Restaurant was added successfully! *')
+                flash(resp_msg)
+                #redirect to specific restaurant id (to add items)
+                return redirect('/restaurants/rst_id{}#top'.format(rest_by_id.id) )
+            except: # item not added - redirect to "Add rerstaurant" button
+                resp_msg = gen_responce_dic('bottom','reject_red',
+                                            '* Restaurant was not added. Try again... *')
+                flash(resp_msg)
+                # redirect to restaurant list
+                return redirect('/restaurants#bottom')     
+
             
         # cancel_button pressed - redirect to menu items page
         if request.form.get('cancel_button',0):
@@ -228,16 +247,26 @@ def add_menu_item_to_restaurant_id(rst_id, mnu_id):
 
             # set new  object attributes and commit
             new_rest_item =  set_item_attr(RestMenuItem(), rest_item_dic)
-            rest_ses.add(new_rest_item)
-            rest_ses.commit()       
-           
-            # redirecting to menu item fragment #mid
-            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val,mnu_id_val))
-            #return redirect(url_for('restaurant_id', rst_id = rst_id))
-                   
+            
+            try:    # to add new item into DB
+                # print( '1' + 2 )
+                rest_ses.add(new_rest_item)
+                rest_ses.commit()       
+            
+                resp_msg = gen_responce_dic('item','confirm_green',
+                                            '* Menu item was added successfully! *', mnu_id_val )
+                flash(resp_msg)
+                # redirecting to menu item fragment #mid
+                return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val, mnu_id_val))
+            
+            except: # item not added - redirect to "rerstaurant_id" button
+                resp_msg = gen_responce_dic('top','reject_red',
+                                            '* Menu item was not added. Try again... *')
+                flash(resp_msg)
+                return redirect(url_for('restaurant_id', rst_id = rst_id))
+                                   
         # cancel_button pressed - redirect to menu items page
         if request.form.get('cancel_button',0):
-
             return redirect(url_for('restaurant_id', rst_id = rst_id))
             
 
@@ -279,24 +308,32 @@ def edit_menu_item_for_restaurant_id(rst_id, mnu_id):
 
         # add_button pressed - add to DB
         if request.form.get('submit_button',0):
-            # query to get price menu item with restaurant id and  menu item id
-            rest_menu_item = rest_ses.query(RestMenuItem).\
-                                      filter(RestMenuItem.restaurant_id == rst_id_val).\
-                                      filter(RestMenuItem.menu_item_id == mnu_id_val).one()
+            try:
+                # query to get price menu item with restaurant id and  menu item id
+                rest_menu_item = rest_ses.query(RestMenuItem).\
+                                          filter(RestMenuItem.restaurant_id == rst_id_val).\
+                                          filter(RestMenuItem.menu_item_id == mnu_id_val).one()
            
-            # update object attributes and commit
-            rest_menu_item = upd_item_attr(rest_menu_item, request.form)
-            rest_ses.add(rest_menu_item)
-            rest_ses.commit()
-            
+                # update object attributes and commit
+                rest_menu_item = upd_item_attr(rest_menu_item, request.form)
+                rest_ses.add(rest_menu_item)
+                rest_ses.commit()
+                resp_msg = gen_responce_dic('item','confirm_green',
+                                            '* Menu item was updated successfully! *', 
+                                            rest_menu_item.menu_item_id)
+                flash(resp_msg)
+            except: # item not updated
+                    resp_msg = gen_responce_dic('item','reject_red',
+                                            '* Menu item was not updated. Try again... *',
+                                            rest_menu_item.menu_item_id)
+                    flash(resp_msg)                   
             # redirecting to menu item fragment #mid
-            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val,mnu_id_val))
-            # return redirect(url_for('restaurant_id', rst_id = rst_id ))            
+            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val, mnu_id_val))                      
 
         if request.form.get('cancel_button',0):
             # redirecting to menu item fragment #mid
-            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val,mnu_id_val))
-            # return redirect(url_for('restaurant_id', rst_id = rst_id ))  
+            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val, mnu_id_val))
+
 
 # 2.3. Routing to delete menu item id for specific restaurant
 # parametrs:
@@ -329,20 +366,32 @@ def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
 
         # add_button pressed - add to DB
         if request.form.get('delete_button',0):
-            # query to get price menu item with restaurant id and  menu item id
-            rest_menu_item = rest_ses.query(RestMenuItem).\
-                                      filter(RestMenuItem.restaurant_id == rst_id_val).\
-                                      filter(RestMenuItem.menu_item_id == mnu_id_val).one()
+            try:
+                # query to get price menu item with restaurant id and  menu item id
+                rest_menu_item = rest_ses.query(RestMenuItem).\
+                                          filter(RestMenuItem.restaurant_id == rst_id_val).\
+                                       filter(RestMenuItem.menu_item_id == mnu_id_val).one()
+                # delete price menu item record and commit
+                rest_ses.delete(rest_menu_item)
+                rest_ses.commit()
+
+                resp_msg = gen_responce_dic('bottom','confirm_green',
+                                            '* Menu item was deleted successfully! *')
+                flash(resp_msg)
+                return redirect('/restaurants/rst_id{}#top'.format(rst_id_val) )
+            except: # item not delete
+                resp_msg = gen_responce_dic('item','reject_red',
+                                            '* Menu item was not delete. Try again... *',
+                                            mnu_id_val)
+                flash(resp_msg)                   
+                # redirecting to menu item fragment #mid
+                return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val, mnu_id_val)) 
             
-            # delete price menu item record and commit
-            rest_ses.delete(rest_menu_item)
-            rest_ses.commit()
             
-            return redirect(url_for('restaurant_id', rst_id = rst_id ))
             
         if request.form.get('cancel_button',0):
             # redirecting to menu item fragment #mid
-            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val,mnu_id_val))
+            return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val, mnu_id_val))
             # return redirect(url_for('restaurant_id', rst_id = rst_id ))           
     
 
@@ -364,16 +413,27 @@ def edit_restaurant_id(rst_id):
         if request.form.get('submit_button',0):
             #get menu item id value
             rst_id_val = int(rst_id[6:])
-            # query to get restaurant with id = rst_id_val
-            rest_by_id = rest_ses.query(Restaurant).\
-                                  filter(Restaurant.id == rst_id_val).one()
             
-            # update object attributes and commit
-            rest_by_id =  upd_item_attr(rest_by_id, request.form)
-            rest_ses.add(rest_by_id)
-            rest_ses.commit() 
-                       
-            return redirect(url_for('restaurant_id', rst_id = rst_id ))
+            try:
+                # query to get restaurant with id = rst_id_val
+                rest_by_id = rest_ses.query(Restaurant).\
+                                      filter(Restaurant.id == rst_id_val).one()
+            
+                # update object attributes and commit
+                rest_by_id =  upd_item_attr(rest_by_id, request.form)
+                rest_ses.add(rest_by_id)
+                rest_ses.commit() 
+
+                resp_msg = gen_responce_dic('bottom','confirm_green',
+                                            '* Restaurant was updated successfully! *')
+                flash(resp_msg)
+            except: # restaurant not updated
+                    resp_msg = gen_responce_dic('bottom','reject_red',
+                                            '* Restaurant was not updated. Try again... *')
+                    flash(resp_msg)
+
+            # redirect to 'restaurant id" page           
+            return redirect('/restaurants/rst_id{}#top'.format(rst_id_val) )
                     
         if request.form.get('cancel_button',0):
             return redirect(url_for('restaurant_id', rst_id = rst_id ))
@@ -409,20 +469,39 @@ def delete_restaurant_id(rst_id):
             
             # if restaurant have menu items - delete records from RestMenuItem
             if rest_menu_items:
-                # delete selected records from RestMenuItem table
-                for item in rest_menu_items:
-                    rest_ses.delete(item)
-                rest_ses.commit()           
+                try:
+                    # delete selected records from RestMenuItem table
+                    for item in rest_menu_items:
+                        rest_ses.delete(item)
+                    rest_ses.commit()  
+                except: # items not deleted - redirect to "restaurant id" page
+                    resp_msg = gen_responce_dic('bottom','reject_red',
+                                            '* Restaurant was not deleted. Try again... *')
+                    flash(resp_msg)
+                    # redirecting to restaurant with error message    
+                    return redirect('/restaurants/rst_id{}#top'.format(rst_id_val) )
+                  
+            try:
+                # query to get restaurant with id = rst_id_val
+                rest_by_id = rest_ses.query(Restaurant).\
+                                      filter(Restaurant.id == rst_id_val).one()
+                # delete restaurant record and commit
+                rest_ses.delete(rest_by_id)
+                rest_ses.commit()
 
-            # query to get restaurant with id = rst_id_val
-            rest_by_id = rest_ses.query(Restaurant).\
-                                  filter(Restaurant.id == rst_id_val).one()
+                resp_msg = gen_responce_dic('top','confirm_green',
+                                            '* Restaurant was deleted successfully! *')
+                flash(resp_msg)
+                # redirecting to restaurants list
+                return redirect(url_for('restaurants'))
             
-            # delete restaurant record and commit
-            rest_ses.delete(rest_by_id)
-            rest_ses.commit()
-
-            return redirect(url_for('restaurants'))
+            except: # item not deleted - redirect to "menu item id" page
+                resp_msg = gen_responce_dic('bottom','reject_red',
+                                            '* Menu items were deleted, \
+                                               but not restaurant. Try again... *')
+                flash(resp_msg)
+                # redirecting to item with error message
+                return redirect('/restaurants/rst_id{}#top'.format(rst_id_val) ) 
             
         if request.form.get('cancel_button',0):
             return redirect(url_for('restaurant_id', rst_id = rst_id ))   
@@ -479,15 +558,26 @@ def edit_menu_item_id(mnu_id):
         if request.form.get('submit_button',0):
             #get menu item id value
             mnu_id_val = int(mnu_id[6:])
-            # query to get menu item with id = mnu_id_val
-            menu_by_id = rest_ses.query(MenuItem).\
-                                 filter(MenuItem.id == mnu_id_val).one()
             
-            # update object attributes and commit
-            menu_by_id =  upd_item_attr(menu_by_id, request.form)
-            rest_ses.add(menu_by_id)
-            rest_ses.commit()            
+            try:
+                # query to get menu item with id = mnu_id_val
+                menu_by_id = rest_ses.query(MenuItem).\
+                                      filter(MenuItem.id == mnu_id_val).one()
             
+                # update object attributes and commit
+                menu_by_id =  upd_item_attr(menu_by_id, request.form)
+                rest_ses.add(menu_by_id)
+                rest_ses.commit() 
+                
+                resp_msg = gen_responce_dic('bottom','confirm_green',
+                                            '* Menu item was updated successfully! *')
+                flash(resp_msg)
+            except: # item not updated
+                    resp_msg = gen_responce_dic('bottom','reject_red',
+                                            '* Menu item was not updated. Try again... *')
+                    flash(resp_msg)
+
+            # redirect to "menu item id" page
             return redirect(url_for('menu_item_id', mnu_id = mnu_id ))
                    
         if request.form.get('cancel_button',0):
@@ -524,20 +614,38 @@ def delete_menu_item_id(mnu_id):
            
             # if menu item is used at restaurants - delete records from RestMenuItem
             if rest_menu_by_id:
-                # delete selected records from RestMenuItem table
-                for item in rest_menu_by_id:
-                    rest_ses.delete(item)
-                rest_ses.commit()
+                try:   
+                    # delete selected records from RestMenuItem table
+                    for item in rest_menu_by_id:
+                        rest_ses.delete(item)
+                    rest_ses.commit()
+                except: # item not deleted - redirect to "menu item id" page
+                    resp_msg = gen_responce_dic('bottom','reject_red',
+                                            '* Menu item was not deleted. Try again... *')
+                    flash(resp_msg)
+                    # redirecting to item with error message
+                    return redirect(url_for('menu_item_id', mnu_id = mnu_id ))
+                      
+            try:    
+                # query to get menu item with id = mnu_id_val
+                menu_by_id = rest_ses.query(MenuItem).\
+                                      filter(MenuItem.id == mnu_id_val).one()
+                # delete selected record from MenuItem table
+                rest_ses.delete(menu_by_id)
+                rest_ses.commit() 
 
-            # query to get menu item with id = mnu_id_val
-            menu_by_id = rest_ses.query(MenuItem).\
-                                  filter(MenuItem.id == mnu_id_val).one()
-            
-            # delete selected record from MenuItem table
-            rest_ses.delete(menu_by_id)
-            rest_ses.commit() 
-
-            return redirect(url_for('menu_items'))            
+                resp_msg = gen_responce_dic('top','confirm_green',
+                                            '* Menu item was deleted successfully! *')
+                flash(resp_msg)
+                # redirecting to item list
+                return redirect(url_for('menu_items')) 
+            except: # item not deleted - redirect to "menu item id" page
+                resp_msg = gen_responce_dic('bottom','reject_red',
+                                            '* Menu item was deleted from restaurants, \
+                                               but not from menu list. Try again... *')
+                flash(resp_msg)
+                # redirecting to item with error message
+                return redirect(url_for('menu_item_id', mnu_id = mnu_id ))          
 
         if request.form.get('cancel_button',0):
             return redirect(url_for('menu_item_id', mnu_id = mnu_id ))           
@@ -601,16 +709,26 @@ def add_menu_item():
         if request.form.get('add_button',0):
             # set new  object attributes and commit
             new_item =  set_item_attr(MenuItem(), request.form)
-            rest_ses.add(new_item)
-            rest_ses.commit()
-
-            # query to select item id
-            menu_by_id = rest_ses.query(MenuItem).\
-                                  filter(MenuItem.name == new_item.name).\
-                                  filter(MenuItem.description == new_item.description).one()          
             
-            return redirect('/restaurants/menu_items#m{}'.format(menu_by_id.id))
-            #return redirect(url_for('menu_items'))            
+            try:    # to add new item into DB
+                # print( '1' + 2 )
+                rest_ses.add(new_item)
+                rest_ses.commit() 
+
+                # query to select item id
+                menu_by_id = rest_ses.query(MenuItem).\
+                                      filter(MenuItem.name == new_item.name).\
+                                      filter(MenuItem.description == new_item.description).one()            
+                
+                resp_msg = gen_responce_dic('item','confirm_green',
+                                            '* Menu item was added successfully! *', menu_by_id.id )
+                flash(resp_msg)
+                return redirect('/restaurants/menu_items#m{}'.format(menu_by_id.id))               
+            except:
+                resp_msg = gen_responce_dic('bottom','reject_red',
+                                            '* Menu item was not added. Try again... *')
+                flash(resp_msg)
+                return redirect(url_for('menu_items'))   
 
         # cancel_button pressed - redirect to menu items page
         if request.form.get('cancel_button',0):
@@ -661,12 +779,11 @@ def news_promo():
 def contact_us():
     return render_template('contact_us.html')
         
-
         
 # if mani module to execute
 if __name__ == '__main__':
-    
-    
+    # set key for flashing
+    app.secret_key = 'Add#flash*key_10'
     # strat debug mode
     app.debug = True
     # run server at port 5000

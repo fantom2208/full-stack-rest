@@ -43,6 +43,16 @@
 		<div class="container">
 			<div class="portfolio">
 				<a class="navigation" id="top" href="#bottom">Move bottom...</a>
+				<!--top flashing messages-->
+				{% with message = get_flashed_messages()[0] %}
+					{% if message %}
+						{% if message.position == "top"%}
+							<br><br>
+							<b class="{{message.color}}"> {{ message.message }}</b>
+						{% endif %}
+					{% endif %}
+				{% endwith %}
+				<!--end flashing-->
 				<h2>Our restaurants</h2>
                 {% if rest_items %}
 					{% for (item, logo_name) in rest_items %}
@@ -60,9 +70,19 @@
 					<h3> No restaurants yet ...</h3>
 				{% endif%}
 				<a class="navigation" id="bottom" href="#top">Move top...</a>
+				
+				<!--flashing messages-->
+				{% with message = get_flashed_messages()[0] %}
+					{% if message %}
+						{% if message.position == 'bottom'%}
+							<br><br>
+							<b class="{{message.color}}"> {{ message.message }}</b>
+						{% endif %}
+					{% endif %}
+				{% endwith %}			
 				<br><br>
             </div>
-			
+
 			<!-- form to load add restaurant form -->
 			<form action="{{ url_for('add_restaurant')}}" method="get">
 				<input type="submit" value="Add new restaurant">

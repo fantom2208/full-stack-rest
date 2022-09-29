@@ -42,6 +42,16 @@
 	<section>
 		<div class="container">
 			<div class="portfolio">
+				<!--top flashing messages-->
+				{% with message = get_flashed_messages()[0] %}
+					{% if message %}
+						{% if message.position == "top"%}
+							<b class="{{message.color}}"> {{ message.message }}</b>
+							<br><br>
+						{% endif %}
+					{% endif %}
+				{% endwith %}
+				<!--end flashing-->
 				<div class="item div_post">
 					<h2>{{ menu_item.name }}</h2>
 					<p class="item_menu_span"> Description: {{ menu_item.description }} </p>
@@ -54,6 +64,18 @@
 						<p class="support_italic"> Content: {{ menu_item.content }} </p>
 					{% endif %}
 				</div>
+				<!--bottom flashing messages-->
+				{% with message = get_flashed_messages()[0] %}
+					{% if message %}
+						{% if message.position == "bottom"%}
+							
+							<b class="{{message.color}}"> {{ message.message }}</b>		
+							<br><br>					
+						{% endif %}
+					{% endif %}
+				{% endwith %}
+				<!--end flashing-->	
+
 				<div>
 					<!-- form to load edit menu item form -->
 					<form style="display: inline" 

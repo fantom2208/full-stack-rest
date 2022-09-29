@@ -43,6 +43,16 @@
 		<div class="container">
 			<div class="portfolio">
 				<a class="navigation" id="top" href="#bottom">Move bottom...</a>
+				<!--top flashing messages-->
+				{% with message = get_flashed_messages()[0] %}
+					{% if message %}
+						{% if message.position == "top"%}
+							<br><br>
+							<b class="{{message.color}}"> {{ message.message }}</b>
+						{% endif %}
+					{% endif %}
+				{% endwith %}
+				<!--end flashing-->
 				{% if menu_items %}
 					{% if rest %}
 						<h2>Select menu items to add to '{{ rest.name }}' restaurant:</h2>
@@ -57,7 +67,6 @@
 								<p>
 									<span class="item_menu_span"> {{ item.description }} </span>
 								</p>
-								
 								<!-- form to load add menu item to rataurant form -->
 								<form action="{{ url_for('add_menu_item_to_restaurant_id', 
 												rst_id = 'rst_id' ~ rest.id,
@@ -84,7 +93,16 @@
 								<p> Content: {{ item.content }} </p>
 							{% endif %}
 							-->
-							<!--<br><br>-->
+							
+							<!--item flashing messages-->
+							{% with message = get_flashed_messages()[0] %}
+								{% if message %}
+									{% if message.position == "item" and message.id == item.id %}
+										<b class="{{message.color}}"> {{ message.message }}</b>
+									{% endif %}
+								{% endif %}
+							{% endwith %}
+							<!--end flashing-->	
 						</div>
 					{% endfor %}
 				{% else %}
@@ -96,6 +114,16 @@
 				{% endif %}	
 				<a class="navigation" id="bottom" href="#top">Move top...</a>
 				<br><br>
+				<!--bottom flashing messages-->
+				{% with message = get_flashed_messages()[0] %}
+					{% if message %}
+						{% if message.position == "bottom"%}
+							<b class="{{message.color}}"> {{ message.message }}</b>
+							<br><br>
+						{% endif %}
+					{% endif %}
+				{% endwith %}
+				<!--end flashing-->				
 			</div>
 
 			{% if rest %}

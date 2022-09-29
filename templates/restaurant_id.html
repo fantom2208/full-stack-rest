@@ -45,6 +45,16 @@
 				<a class="navigation" id="top" href="#bottom">Move bottom...</a>
 				<h2>{{rest_item.name}}</h2>
                 <div class="item div_post">
+					<!--top flashing messages-->
+					{% with message = get_flashed_messages()[0] %}
+						{% if message %}
+							{% if message.position == "top"%}
+								<b class="{{message.color}}"> {{ message.message }}</b>
+								<br><br>
+							{% endif %}
+						{% endif %}
+					{% endwith %}
+					<!--end flashing-->
 					<img src={{url_for("static", filename = logo_name )}} 
 						 width="260" 
 						 height="260" 
@@ -60,7 +70,7 @@
 										 rst_id = 'rst_id' ~ rest_item.id)}}" 
 							  method="get">
 							<input type="submit" 
-							       value="Edit '{{rest_item.name}}' info">
+							       value="Edit restaurant">
 						</form>
 						
 						<!-- form to load delete menu item form -->
@@ -69,7 +79,7 @@
 										 rst_id = 'rst_id' ~ rest_item.id)}}" 
 							  method="get">
 							<input type="submit" 
-							       value="Delete '{{rest_item.name}}' and its menu">
+							       value="Delete restaurant">
 						</form>
 						
 						<!-- form to load edit menu item form -->
@@ -77,13 +87,24 @@
 										 rst_id = 'rst_id' ~ rest_item.id)}}" 
 							  method="get">
 		   					<input type="submit" 
-							       value="Add new item to '{{rest_item.name}}'">
+							       value="Add new item to restaurant">
 	   					</form>						
 					</p>
+					<!--bottom flashing messages-->
+					{% with message = get_flashed_messages()[0] %}
+						{% if message %}
+							{% if message.position == "bottom"%}
+								<b class="{{message.color}}"> {{ message.message }}</b>
+								<br><br>
+							{% endif %}
+						{% endif %}
+					{% endwith %}
+					<!--end flashing-->
 				</div>	
 			</div>
 
 			<div class="portfolio_half">		
+				<br class="navigation">
 				<h2>Our menu:</h2>
 				<div class="item div_post">
 					{% if menu_items %}
@@ -104,6 +125,17 @@
 								</div>
 								<div class="support_italic"> * {{ item.course }} </div>
 								<div class="support_italic_right"> = {{ price }} rub</div>
+								<!--item flashing messages-->
+								{% with message = get_flashed_messages()[0] %}
+									{% if message %}
+										{% if message.position == "item" and message.id == item.id %}
+											<b class="{{message.color}}"> {{ message.message }}</b>
+											<br><br>
+										{% endif %}
+									{% endif %}
+								{% endwith %}
+								<!--end flashing-->		
+								
 								<div>
 									<!-- form to load edit menu item form -->
 									<form style="display: inline" 
@@ -112,7 +144,7 @@
 													 mnu_id = 'mnu_id' ~ item.id)}}" 
 										  method="get">
 										<input type="submit" 
-											   value="Edit price and comment">
+											   value="Edit price">
 									</form>
 									
 									<!-- form to load delete menu item form -->
@@ -122,7 +154,7 @@
 														mnu_id = 'mnu_id' ~ item.id)}}" 
 											  method="get">
 										<input type='submit' 
-											   value="Delete item from '{{rest_item.name}}'">
+											   value="Delete item">
 									</form>									
 								</div>
 							</p>							
