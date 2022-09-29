@@ -157,7 +157,6 @@ def add_restaurant():
                 flash(resp_msg)
                 # redirect to restaurant list
                 return redirect('/restaurants#bottom')     
-
             
         # cancel_button pressed - redirect to menu items page
         if request.form.get('cancel_button',0):
@@ -170,13 +169,19 @@ def add_restaurant():
 @app.route('/api.restaurants/<string:rst_id>/')
 @app.route('/restaurants/<string:rst_id>/')
 def restaurant_id(rst_id):
-    #get restaurant id value
-    rst_id_val = int(rst_id[6:])
+    try:
+        #get restaurant id value
+        rst_id_val = int(rst_id[6:])
+        # query to get restaurant with id = rst_id_val
+        rest_by_id = rest_ses.query(Restaurant).\
+                            filter(Restaurant.id == rst_id_val).one()
+    except: # url path data for restaurant is incorrect
+            # redirect to 'restaurants' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Restaurant was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurants'))
 
-    # query to get restaurant with id = rst_id_val
-    rest_by_id = rest_ses.query(Restaurant).\
-                          filter(Restaurant.id == rst_id_val).one()
-    
     logo_file = rest_by_id.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
     # if logo not existed
     if not path.isfile('static/'+ logo_file):
@@ -215,20 +220,32 @@ def restaurant_id(rst_id):
 def add_menu_item_to_restaurant_id(rst_id, mnu_id):
     # GET method - to send form
     if request.method == 'GET':
-        #get restaurant id value
-        rst_id_val = int(rst_id[6:])
+        try:
+            #get restaurant id value
+            rst_id_val = int(rst_id[6:])
+            # query to get restaurant with id = rst_id_val
+            rest_by_id = rest_ses.query(Restaurant).\
+                            filter(Restaurant.id == rst_id_val).one()
+        except: # url path data for restaurant is incorrect
+            # redirect to 'restaurants' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Restaurant was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurants'))
         
-        # query to get restaurant with id = rst_id_val
-        rest_by_id = rest_ses.query(Restaurant).\
-                          filter(Restaurant.id == rst_id_val).one()
-        
-        #get menu item id value
-        mnu_id_val = int(mnu_id[6:])
-
-        # query to get menu item with id = mnu_id_val
-        menu_item_by_id = rest_ses.query(MenuItem).\
-                                filter(MenuItem.id == mnu_id_val).one()
-                
+        try:
+            #get menu item id value
+            mnu_id_val = int(mnu_id[6:])
+            # query to get menu item with id = mnu_id_val
+            menu_item_by_id = rest_ses.query(MenuItem).\
+                                    filter(MenuItem.id == mnu_id_val).one()
+        except:     # url path data for menu item is incorrect
+            # redirect to select 'menu items' for specific restaurant with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Menu item was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('menu_items', rst_id = rst_id))
+                            
         return render_template('add_menu_item_to_restaurant_id.html',
                                 rest = rest_by_id, item = menu_item_by_id )
            
@@ -249,7 +266,6 @@ def add_menu_item_to_restaurant_id(rst_id, mnu_id):
             new_rest_item =  set_item_attr(RestMenuItem(), rest_item_dic)
             
             try:    # to add new item into DB
-                # print( '1' + 2 )
                 rest_ses.add(new_rest_item)
                 rest_ses.commit()       
             
@@ -278,18 +294,31 @@ def add_menu_item_to_restaurant_id(rst_id, mnu_id):
 def edit_menu_item_for_restaurant_id(rst_id, mnu_id):
     # GET method - to send form
     if request.method == 'GET':
-        #get restaurant id value
-        rst_id_val = int(rst_id[6:])
-        # query to get restaurant with id = rst_id_val
-        rest_by_id = rest_ses.query(Restaurant).\
-                              filter(Restaurant.id == rst_id_val).one()
-       
-        #get menu item id value
-        mnu_id_val = int(mnu_id[6:])
-        # query to get menu item with id = mnu_id_val
-        menu_item_by_id = rest_ses.query(MenuItem).\
-                                filter(MenuItem.id == mnu_id_val).one()
-        
+        try:
+            #get restaurant id value
+            rst_id_val = int(rst_id[6:])
+            # query to get restaurant with id = rst_id_val
+            rest_by_id = rest_ses.query(Restaurant).\
+                                filter(Restaurant.id == rst_id_val).one()
+        except: # url path data for restaurant is incorrect
+            # redirect to 'restaurants' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Restaurant was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurants'))
+
+        try:
+            #get menu item id value
+            mnu_id_val = int(mnu_id[6:])
+            # query to get menu item with id = mnu_id_val
+            menu_item_by_id = rest_ses.query(MenuItem).\
+                                    filter(MenuItem.id == mnu_id_val).one()
+        except:     # url path data for menu item is incorrect
+            # redirect to 'restaurant_id' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Menu item was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurant_id', rst_id = rst_id))
 
         # query to get price menu item with restaurant id and  menu item id
         rest_menu_item = rest_ses.query(RestMenuItem).\
@@ -343,17 +372,31 @@ def edit_menu_item_for_restaurant_id(rst_id, mnu_id):
 def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
     # GET method - to send form
     if request.method == 'GET':
-        #get restaurant id value
-        rst_id_val = int(rst_id[6:])
-        # query to get restaurant with id = rst_id_val
-        rest_by_id = rest_ses.query(Restaurant).\
-                              filter(Restaurant.id == rst_id_val).one()
+        try:
+            #get restaurant id value
+            rst_id_val = int(rst_id[6:])
+            # query to get restaurant with id = rst_id_val
+            rest_by_id = rest_ses.query(Restaurant).\
+                                filter(Restaurant.id == rst_id_val).one()
+        except: # url path data for restaurant is incorrect
+            # redirect to 'restaurants' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Restaurant was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurants'))
         
-        # get menu item id value
-        mnu_id_val = int(mnu_id[6:])
-        # query to get menu item with id = mnu_id_val
-        menu_item_by_id = rest_ses.query(MenuItem).\
-                                filter(MenuItem.id == mnu_id_val).one()
+        try:
+            # get menu item id value
+            mnu_id_val = int(mnu_id[6:])
+            # query to get menu item with id = mnu_id_val
+            menu_item_by_id = rest_ses.query(MenuItem).\
+                                    filter(MenuItem.id == mnu_id_val).one()
+        except:     # url path data for menu item is incorrect
+            # redirect to 'restaurant_id' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Menu item was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurant_id', rst_id = rst_id))
         
         return render_template('delete_menu_item_for_restaurant_id.html',
                                 rest = rest_by_id, item = menu_item_by_id )
@@ -370,7 +413,7 @@ def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
                 # query to get price menu item with restaurant id and  menu item id
                 rest_menu_item = rest_ses.query(RestMenuItem).\
                                           filter(RestMenuItem.restaurant_id == rst_id_val).\
-                                       filter(RestMenuItem.menu_item_id == mnu_id_val).one()
+                                          filter(RestMenuItem.menu_item_id == mnu_id_val).one()
                 # delete price menu item record and commit
                 rest_ses.delete(rest_menu_item)
                 rest_ses.commit()
@@ -387,8 +430,6 @@ def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
                 # redirecting to menu item fragment #mid
                 return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val, mnu_id_val)) 
             
-            
-            
         if request.form.get('cancel_button',0):
             # redirecting to menu item fragment #mid
             return redirect("/restaurants/rst_id{}#m{}".format(rst_id_val, mnu_id_val))
@@ -401,11 +442,18 @@ def delete_menu_item_for_restaurant_id(rst_id, mnu_id):
 @app.route('/restaurants/<string:rst_id>/edit', methods=['GET', 'POST'])
 def edit_restaurant_id(rst_id):
     if request.method == 'GET':
-        #get menu item id value
-        rst_id_val = int(rst_id[6:])  
-        # query to get restaurant with id = rst_id_val
-        rest_by_id = rest_ses.query(Restaurant).\
-                              filter(Restaurant.id == rst_id_val).one()
+        try:
+            #get menu item id value
+            rst_id_val = int(rst_id[6:])  
+            # query to get restaurant with id = rst_id_val
+            rest_by_id = rest_ses.query(Restaurant).\
+                                filter(Restaurant.id == rst_id_val).one()
+        except: # url path data for restaurant is incorrect
+            # redirect to 'restaurants' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Restaurant was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurants'))
         
         return render_template('edit_restaurant_id.html',  rest = rest_by_id )
         
@@ -445,11 +493,18 @@ def edit_restaurant_id(rst_id):
 @app.route('/restaurants/<string:rst_id>/delete', methods=['GET', 'POST'])
 def delete_restaurant_id(rst_id):
     if request.method == 'GET':
-        #get menu item id value
-        rst_id_val = int(rst_id[6:]) 
-        # query to get restaurant with id = rst_id_val
-        rest_by_id = rest_ses.query(Restaurant).\
-                              filter(Restaurant.id == rst_id_val).one()
+        try:
+            #get menu item id value
+            rst_id_val = int(rst_id[6:]) 
+            # query to get restaurant with id = rst_id_val
+            rest_by_id = rest_ses.query(Restaurant).\
+                                filter(Restaurant.id == rst_id_val).one()
+        except: # url path data for restaurant is incorrect
+            # redirect to 'restaurants' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Restaurant was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurants'))
         
         # query to get price menu item with restaurant id 
         rest_menu_items = rest_ses.query(RestMenuItem.menu_item_id, MenuItem.name ).\
@@ -521,20 +576,37 @@ def filter_restaurant_id(rst_id):
 @app.route('/restaurants/menu_items/<string:mnu_id>')
 @app.route('/restaurants/<string:rst_id>/<string:mnu_id>')
 def menu_item_id(mnu_id, rst_id=None):
-    #get menu item id value
-    mnu_id_val = int(mnu_id[6:])
-    # query to get menu item with id = mnu_id_val
-    mnu_by_id = rest_ses.query(MenuItem).\
-                          filter(MenuItem.id == mnu_id_val).one()
-    
     #get restaurant id value if possible
     if rst_id:
-        rst_id_val = int(rst_id[6:])
-        # query to get restaurant with id = rst_id_val
-        restaurant = rest_ses.query(Restaurant).\
-                              filter(Restaurant.id == rst_id_val).one()
+        try:
+            rst_id_val = int(rst_id[6:])
+            # query to get restaurant with id = rst_id_val
+            restaurant = rest_ses.query(Restaurant).\
+                                filter(Restaurant.id == rst_id_val).one()
+        except: # url path data for restaurant is incorrect
+            # redirect to 'restaurants' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Restaurant was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurants')) 
     else:
-        restaurant = None
+        restaurant = None   
+    
+    try:
+        #get menu item id value
+        mnu_id_val = int(mnu_id[6:])
+        # query to get menu item with id = mnu_id_val
+        mnu_by_id = rest_ses.query(MenuItem).\
+                            filter(MenuItem.id == mnu_id_val).one()
+    except:     # url path data for menu item is incorrect
+        # redirect to 'menu items' or 'restaurant_id' page with error message
+        resp_msg = gen_responce_dic('top','reject_red',
+                                    '* Menu item was incorrect, select one from the list... *')
+        flash(resp_msg)
+        if rst_id:
+            return redirect(url_for('restaurant_id', rst_id = rst_id ))
+        else:
+            return redirect(url_for('menu_items')) 
 
     return render_template('menu_item_id.html', menu_item = mnu_by_id,
                             rest_item = restaurant)    
@@ -546,11 +618,18 @@ def menu_item_id(mnu_id, rst_id=None):
 @app.route('/restaurants/menu_items/<string:mnu_id>/edit', methods=['GET', 'POST'])
 def edit_menu_item_id(mnu_id):
     if request.method == 'GET':
-        #get menu item id value
-        mnu_id_val = int(mnu_id[6:])  
-        # query to get menu item with id = mnu_id_val
-        mnu_by_id = rest_ses.query(MenuItem).\
-                             filter(MenuItem.id == mnu_id_val).one()
+        try:
+            #get menu item id value
+            mnu_id_val = int(mnu_id[6:])  
+            # query to get menu item with id = mnu_id_val
+            mnu_by_id = rest_ses.query(MenuItem).\
+                                filter(MenuItem.id == mnu_id_val).one()
+        except:     # url path data for menu item is incorrect
+            # redirect to 'menu items' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Menu item was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('menu_items'))
         
         return render_template('edit_menu_item_id.html',  menu_item = mnu_by_id )        
 
@@ -590,12 +669,19 @@ def edit_menu_item_id(mnu_id):
 @app.route('/restaurants/menu_items/<string:mnu_id>/delete', methods=['GET', 'POST'])
 def delete_menu_item_id(mnu_id):
     if request.method == 'GET':
-        #get menu item id value
-        mnu_id_val = int(mnu_id[6:])
-        # query to get menu item with id = mnu_id_val
-        menu_by_id = rest_ses.query(MenuItem).\
-                              filter(MenuItem.id == mnu_id_val).one()
-        
+        try:
+            #get menu item id value
+            mnu_id_val = int(mnu_id[6:])
+            # query to get menu item with id = mnu_id_val
+            menu_by_id = rest_ses.query(MenuItem).\
+                                filter(MenuItem.id == mnu_id_val).one()
+        except:     # url path data for menu item is incorrect
+            # redirect to 'menu items' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Menu item was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('menu_items'))
+
         # query to get all restaurants with menu item id from RestMenuItem table
         rest_menu_item_id = rest_ses.query(RestMenuItem.restaurant_id, Restaurant.name).\
                                       join(Restaurant).\
@@ -657,11 +743,18 @@ def delete_menu_item_id(mnu_id):
 @app.route('/restaurants/menu_items/<string:rst_id>/add')
 def menu_items(rst_id = None):   
     if rst_id:                      # adding not existed menu items to restaurant
-        #get menu item id value
-        rst_id_val = int(rst_id[6:])    
-        # query to get restaurant with id = rst_id_val
-        restaurant = rest_ses.query(Restaurant).\
-                              filter(Restaurant.id == rst_id_val).one()
+        try:
+            #get menu item id value
+            rst_id_val = int(rst_id[6:])    
+            # query to get restaurant with id = rst_id_val
+            restaurant = rest_ses.query(Restaurant).\
+                                filter(Restaurant.id == rst_id_val).one()
+        except: # url path data for restaurant is incorrect
+            # redirect to 'restaurants' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Restaurant was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurants'))
         
         # query to get all menu item ids for sprcific restaurant id from RestMenuItem
         rest_id_menu_items = rest_ses.query(RestMenuItem.menu_item_id).\
@@ -711,7 +804,6 @@ def add_menu_item():
             new_item =  set_item_attr(MenuItem(), request.form)
             
             try:    # to add new item into DB
-                # print( '1' + 2 )
                 rest_ses.add(new_item)
                 rest_ses.commit() 
 
