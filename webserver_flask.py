@@ -13,7 +13,11 @@ from sqlalchemy.orm import sessionmaker
 from database.database_setup import Base, MenuItem, Restaurant, RestMenuItem
 
 # import os module to check files for logo
-import os.path as path  
+# import os.path as path
+from os import path
+# import os module to get server port
+from os import environ
+
 
 # set_connection:
 # set connection to db (from end of CONFIGURATION)
@@ -878,8 +882,10 @@ if __name__ == '__main__':
     app.secret_key = 'Add#flash*key_10'
     # strat debug mode
     app.debug = True
-    # run server at port 5000
-    app.run(host='0.0.0.0', port=5000)
+    # run server at current port from os.environ 
+    # or default port 5000
+    os_port = int(environ.get('PORT', 5000))   # Use PORT if it's there.
+    app.run(host='0.0.0.0', port=os_port)
 
 
 
