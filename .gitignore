@@ -1,12 +1,11 @@
+# temp folder
 /server_back
-
-database/README.txt
 database/__pycache__
 
-static/panda_garden.jpg
-database/back_restaurantmenu.db
+# later tot put information about project requirements
+/readme
 
-
+# notes files
 full_stack.txt
 flask.txt
 restaurantmenu.db
