@@ -1,30 +1,13 @@
-# reading data from tables restaurant db
+# module to update records in tables 
 
-# Connection to DB and adding information in tables via script
-# create_engine will point (connect) to database we used 
-from sqlalchemy import create_engine
-# import to make connection to 
-from sqlalchemy.orm import sessionmaker
-##import filtering for query objects
-##from sqlalchemy_filters import apply_filters
 # from initial setup module import CLASSES 
-from database_setup import Base, MenuItem, Restaurant, RestMenuItem
+from database_setup import Base, MenuItem, Restaurant, \
+                               RestMenuItem, get_db_connection
 
 
-def set_connection():
-    # set connection to db (from end of CONFIGURATION)
-    # instance (example) of engine class and connect to database 
-    engine = create_engine('sqlite:///restaurantmenu.db')
-    # mekes connection between CLASSES and corresponding tables
-    Base.metadata.bind = engine
-    # establish communication between code and engine
-    db_rest_ses = sessionmaker(bind = engine)
-    # set interface to write all commands in SQL
-    # but not send them till nmethod commit() 
-    return db_rest_ses()
 
 
-# ----- handling logic for reading db ----- 
+# ----- handling logic for update db ----- 
 # function to get dictioary of class attributes (table columns)
 def get_attr_dict(cls_obj):
     elm = vars(cls_obj)
@@ -276,7 +259,7 @@ def update_db_rec(rest_ses):
   # if mani module to execute
 if __name__ == '__main__':
     # set connections
-    rest_ses = set_connection()
+    (rest_ses, flag) = get_db_connection()
     # read db CLI
     update_db_rec(rest_ses)
                  

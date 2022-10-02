@@ -4,33 +4,24 @@ from flask import Flask, render_template, request, redirect, url_for, \
                   jsonify, flash
 
 # database imports
-# Connection to DB and adding information in tables via script
-# create_engine will point (connect) to database we used 
-from sqlalchemy import create_engine
-# import to make connection to 
-from sqlalchemy.orm import sessionmaker
-# from initial setup module import CLASSES 
-from database.database_setup import Base, MenuItem, Restaurant, RestMenuItem
+# from database_setup module import CLASSES 
+from database.database_setup import Base, MenuItem, Restaurant, \
+                                    RestMenuItem, get_db_connection
 
-# import os module to check files for logo
+
 # import os.path as path
 from os import path
 # import os module to get server port
 from os import environ
 
 
-# set_connection:
-# set connection to db (from end of CONFIGURATION)
-# instance (example) of engine class and connect to database 
-engine = create_engine('sqlite:///database/restaurantmenu.db',
-                        connect_args={'check_same_thread': False})
-# mekes connection between CLASSES and corresponding tables
-Base.metadata.bind = engine
-# establish communication between code and engine
-db_rest_ses = sessionmaker(bind = engine)
-# set interface to write all commands in SQL
-# but not send them till method commit() 
-rest_ses = db_rest_ses()
+
+
+
+
+# check if DB file is existed and get connection via function
+(rest_ses, first_flag) = get_db_connection('database/')
+
 
 # instance of Flask object
 app = Flask(__name__)
