@@ -2,10 +2,11 @@
 /server_back
 database/__pycache__
 
-# later tot put information about project requirements
-/readme
+# skip database file
+database/restaurantmenu.db
+
 
 # notes files
 full_stack.txt
 flask.txt
-restaurantmenu.db
+

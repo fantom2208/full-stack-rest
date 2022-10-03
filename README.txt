@@ -6,11 +6,7 @@ engine: python==3.7
         sqlalchemy==1.4.41
 
 initialization (first time):
-        cd database
-        python database_setup.py
-        python 1_manual_input_restaurant.py
-        python 2_manual_input_menu.py
-        python 3_manual_input_menu_price.py
+        not needed, application check create, initialized DB
 
 running (all times):
         python webserver_flask.py
@@ -23,18 +19,11 @@ features:
         /api.restaurants/news_promo
 
         in folder there are scripts for local CLI interfaces
-        01_read_db_rec.py - to read data
-        02_update_db_rec.py - to update fields by filter criteria
-        03_delete_db_rec.py - to delete records by filter criteria
+         - read_db_rec.py - to read data
+         - update_db_rec.py - to update fields by filter criteria
+         - delete_db_rec.py - to delete records by filter criteria
 
 known issues:
-        1) due to database file 'restaurantmenu.db' in repo
-        each push to heroku leads to rollback to initial database
-        content
-        solution: autogeneration DB file and initialization by check if
-                  DB file is existed, remove DB file from repo and add
-                  to .ignorelist
-        when:     to be solved in next step
         2) no upload functionality for logo files, available only
         those which are in repo
         solution: implement upload function in application, remjve current
