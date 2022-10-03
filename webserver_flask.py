@@ -14,7 +14,7 @@ from database.database_setup import Base, MenuItem, Restaurant, \
 from database.auto_input_db import init_all_tables
 
 # import os.path as path, get server port via environ
-from os import path, environ, remove, listdir, mkdir
+from os import path, environ, remove, listdir, mkdir, rmdir
 # import os module for different operations
 # import os
 
@@ -925,7 +925,7 @@ def hard_reset():
         result = init_all_tables(rest_ses)
     
         # set logofiles if its available
-        for file in os.listdir(app.config['UPLOAD_FOLDER'] ):
+        for file in listdir(app.config['UPLOAD_FOLDER'] ):
             for item in rest_ses.query(Restaurant).all():
                 if int(file[11:].split('.')[0]) == item.id:
                     item.logoname = file
@@ -969,6 +969,12 @@ def soft_reset():
     
     return 'Soft reset and {}'.format(result)
 
+# 7.3*. Routing to show folders content at server
+@app.route('/restaurants/admin/showdir/')
+@app.route('/restaurants/admin/showdir/<string:fld_path>')
+def show_dir(fld_path = '.'):
+    fld_path = fld_path.replace('-','/')
+    return {fld_path : listdir(fld_path)}
         
         
 # if mani module to execute
@@ -978,9 +984,20 @@ if __name__ == '__main__':
     # strat debug mode
     app.debug = True
     # check if folder existed, if not - create
-    logo_folder = path.join('static', 'logos2')
+    logo_folder = path.join('static', 'logos')
     if not path.isdir(logo_folder):
         mkdir(logo_folder)
+    # remove next time
+    try:
+        del_logo_folder = path.join('static', 'logos2')
+        for file in listdir(del_logo_folder):
+            remove(path.join(del_logo_folder,file))
+        rmdir(del_logo_folder)
+        print("Directory '% s' has been removed successfully" % del_logo_folder)
+    except OSError as error:
+        print(error)
+        print("Directory '% s' can not be removed" % del_logo_folder)
+
     # set upload folder for logos and file size
     app.config['UPLOAD_FOLDER'] = logo_folder
     app.config['MAX_CONTENT_LENGTH'] = 512 * 1024   # 0.5 MB
