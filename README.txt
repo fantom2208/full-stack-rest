@@ -12,6 +12,9 @@ running (all times):
         python webserver_flask.py
 
 features:
+        functionality to upload logo file (only manual mode)
+        default folder static/logos
+
         API interface for JSON data for following paths:
         /api.restaurants
         /api.restaurants/rst_idN, N - restaurant id
@@ -24,20 +27,11 @@ features:
          - delete_db_rec.py - to delete records by filter criteria
 
 known issues:
-        2) no upload functionality for logo files, available only
-        those which are in repo
-        solution: implement upload function in application, remjve current
-                  logos from repo
-        when:     in second step p.1
-        3) logo filename is connected to restaurant name, changing
-        restaurant name leads to missing logo
-        solution: connect name to restaurant id and add one more column
-                  in Restaurant table for logo filename (with extension)
-        when:     in second step p.2
-        4) if restaurant was deleted, logo file is kept at server
-        solution: add logofile delete in route 2.5
-        when:     in second step p.3
-        4) no JS in HTML templates and application
+        5) at upload form button with 'wrong' locale (not English)
+        solution: to be found later
+        6) no solution to batch input for records and logo file
+        solutio: develop functionality later
+        *) no JS in HTML templates and application
         solution: to be added on demand and during education
 
 url for using application:

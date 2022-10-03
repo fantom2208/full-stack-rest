@@ -55,7 +55,12 @@
 						{% endif %}
 					{% endwith %}
 					<!--end flashing-->
-					<img src={{url_for("static", filename = logo_name )}} 
+					{% if rest_item.logoname %}
+						{% set logo_filename="logos/" ~ rest_item.logoname %}
+					{% else %}
+						{% set logo_filename="no_image.jpg" %}
+					{% endif %}	
+					<img src={{url_for("static", filename=logo_filename )}} 
 						 width="260" 
 						 height="260" 
 						 alt="Restaurant logo">
@@ -80,6 +85,15 @@
 							  method="get">
 							<input type="submit" 
 							       value="Delete restaurant">
+						</form>
+
+						<!-- form to load logo image uploading form -->
+						<form style="display: inline" 
+							  action="{{ url_for('addlogo_restaurant_id', 
+										 rst_id = 'rst_id' ~ rest_item.id)}}" 
+							  method="get">
+							<input type="submit" 
+							       value="Upload logo">
 						</form>
 						
 						<!-- form to load edit menu item form -->

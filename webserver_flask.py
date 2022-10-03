@@ -2,6 +2,8 @@
 # import flask object and create instance
 from flask import Flask, render_template, request, redirect, url_for, \
                   jsonify, flash
+# select module to check file upload security
+from werkzeug.utils import secure_filename
 
 # database imports
 # from database_setup module import CLASSES 
@@ -11,16 +13,15 @@ from database.database_setup import Base, MenuItem, Restaurant, \
 # from auto_input_db module import initial values for DB tales  
 from database.auto_input_db import init_all_tables
 
-# import os.path as path
-from os import path
-# import os module to get server port
-from os import environ
-import os
+# import os.path as path, get server port via environ
+from os import path, environ, remove, listdir
+# import os module for different operations
+# import os
 
 
 
 # check if DB file is existed and get connection via function
-(rest_ses, first_flag) = get_db_connection('database/')
+(rest_ses, first_flag) = get_db_connection('database')
 if first_flag:
     print(init_all_tables(rest_ses))
 
@@ -101,15 +102,6 @@ def restaurants():
     # query to get all restaurants
     rest_all_rec = rest_ses.query(Restaurant).all() 
     
-    # check logo image files and create list of dictionaries
-    rest_rec_logo = []
-    for item in rest_all_rec:
-        logo_file = item.name.lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
-        # if logo not existed
-        if not path.isfile('static/'+ logo_file):
-            logo_file = 'no_image.jpg'
-        rest_rec_logo.append((item, logo_file))
-
     # responce: HTML or JSON API
     if 'api.restaurants' in request.path:      # API responce
         RestaurantsJSON = [item.serialize for item in rest_all_rec]
@@ -117,7 +109,7 @@ def restaurants():
                     'restaurants': RestaurantsJSON }
         return jsonify( responce )
     else:                                       # HTML responce
-        return render_template('restaurants.html', rest_items = rest_rec_logo)
+        return render_template('restaurants.html', rest_items = rest_all_rec)
 
     
 # 1.1. Routing to add restaurant into list
@@ -206,9 +198,8 @@ def restaurant_id(rst_id):
         return jsonify( responce )
     else:                                       # HTML responce
         return render_template('restaurant_id.html', rest_item = rest_by_id,
-                                menu_items = rest_menu_items_by_id, 
-                                logo_name = logo_file)  
-    
+                                menu_items = rest_menu_items_by_id)  
+
 
 # 2.1. Routing to add menu item to specific restaurant
 # parametrs:
@@ -455,6 +446,7 @@ def edit_restaurant_id(rst_id):
         return render_template('edit_restaurant_id.html',  rest = rest_by_id )
         
     if request.method == 'POST':
+        print('form edit: ', request.form)
         if request.form.get('submit_button',0):
             #get menu item id value
             rst_id_val = int(rst_id[6:])
@@ -537,9 +529,14 @@ def delete_restaurant_id(rst_id):
                 # query to get restaurant with id = rst_id_val
                 rest_by_id = rest_ses.query(Restaurant).\
                                       filter(Restaurant.id == rst_id_val).one()
+                
+                # delete logo file (if  existed)
+                if rest_by_id.logoname:
+                    remove(path.join(app.config['UPLOAD_FOLDER'], rest_by_id.logoname))
+                
                 # delete restaurant record and commit
                 rest_ses.delete(rest_by_id)
-                rest_ses.commit()
+                rest_ses.commit()                
 
                 resp_msg = gen_responce_dic('top','confirm_green',
                                             '* Restaurant was deleted successfully! *')
@@ -559,13 +556,65 @@ def delete_restaurant_id(rst_id):
             return redirect(url_for('restaurant_id', rst_id = rst_id ))   
     
 
-# 2.6*. Routing to filter restaurant menu items by cource type
-# parametrs:
+# 2.6*. Routing to add logo for restaurant:
 #  - rst_id is path, syntax: rst_idNN where id = NN
-@app.route('/restaurants/<string:rst_id>/filter')
-def filter_restaurant_id(rst_id):
-    return '2.6*. Returning form to filter reataurant with id: ' + rst_id[6:]
+@app.route('/restaurants/<string:rst_id>/addlogo', methods=['GET', 'POST'])
+def addlogo_restaurant_id(rst_id):
+    if request.method == 'GET':
+        try:
+            #get menu item id value
+            rst_id_val = int(rst_id[6:]) 
+            # query to get restaurant with id = rst_id_val
+            rest_by_id = rest_ses.query(Restaurant).\
+                                filter(Restaurant.id == rst_id_val).one()
+        except: # url path data for restaurant is incorrect
+            # redirect to 'restaurants' page with error message
+            resp_msg = gen_responce_dic('top','reject_red',
+                                        '* Restaurant was incorrect, select one from the list... *')
+            flash(resp_msg)
+            return redirect(url_for('restaurants'))
     
+        return render_template('addlogo_restaurant_id.html',  rest = rest_by_id)
+    
+    if request.method == 'POST':
+        # if upload button - check and save file
+        if request.form.get('upload_button',0):
+            file = request.files.get('selected_file', None)
+            # if user select and submit file
+            if file and file.filename != '':
+                #get menu item id value
+                rst_id_val = int(rst_id[6:]) 
+                # query to get restaurant with id = rst_id_val
+                rest_by_id = rest_ses.query(Restaurant).\
+                                      filter(Restaurant.id == rst_id_val).one()
+
+                file_ext = file.filename.rsplit('.', 1)[1].lower()
+                full_filename = 'logo_rst_id{}.{}'.format(rest_by_id.id, file_ext)
+                file.save(path.join(app.config['UPLOAD_FOLDER'], full_filename))
+
+                # delete current logo file (if  existed and different from uploaded
+                if rest_by_id.logoname and rest_by_id.logoname != full_filename:
+                    remove(path.join(app.config['UPLOAD_FOLDER'], rest_by_id.logoname))
+                
+
+                # update records for logo value filename
+                rest_by_id.logoname = full_filename
+                rest_ses.add(rest_by_id)
+                rest_ses.commit() 
+
+                # redirect to 'restaurant_id' form
+                return redirect(url_for('restaurant_id', rst_id = rst_id ))
+
+            else:   # if no file selected - redirect to select logo
+                resp_msg = gen_responce_dic('bottom','reject_red',
+                                            '* Logo file was not selected, please select... *')
+                flash(resp_msg)                
+                return redirect(url_for('addlogo_restaurant_id', rst_id = rst_id ))
+        
+        # if cancel button - redirect to 'restaurant_id' form
+        if request.form.get('cancel_button',0):
+            return redirect(url_for('restaurant_id', rst_id = rst_id ))
+            
 
 # 3*. Routing for menu item info
 # parametrs:
@@ -831,23 +880,10 @@ def news_promo():
     # select all menu and restaurant from RestMenuItem for filtering where 'comment' not None
     all_promo_lst = rest_ses.query(Restaurant.name, MenuItem.name, \
                                    RestMenuItem.price, RestMenuItem.comment, \
-                                   RestMenuItem.restaurant_id).\
+                                   RestMenuItem.restaurant_id, Restaurant.logoname).\
                              join(MenuItem).join(Restaurant).\
                              filter(RestMenuItem.comment != None).\
                              order_by(Restaurant.id, MenuItem.id).all()
-
-     # if 'promo' records are existed    
-    if all_promo_lst:
-        # check logo image files and create list of dictionaries
-        all_promo_lst_logo = []
-        for item in all_promo_lst:
-            logo_file = item[0].lower().strip(' ').replace(' ','_').replace("'","")+'.jpg'
-            # if logo not existed
-            if not path.isfile('static/'+ logo_file):
-                logo_file = 'no_image.jpg'
-            all_promo_lst_logo.append((item, logo_file))  
-    else:
-          all_promo_lst_logo = []
 
     # responce: HTML or JSON API
     if 'api.restaurants' in request.path:      # API responce
@@ -860,7 +896,7 @@ def news_promo():
                     'promo items': MenuItemsJSON}
         return jsonify( responce )
     else:                                       # HTML responce
-        return render_template('news_promo.html', promo_lst = all_promo_lst_logo)
+        return render_template('news_promo.html', promo_lst = all_promo_lst)
 
     
 # 6*. Routing to show 'Contact us' page
@@ -878,14 +914,26 @@ def hard_reset():
     # close connection
     rest_ses.close()
     # remove db file
-    db_file = 'database/restaurantmenu.db'
+    db_file = path.join('database', 'restaurantmenu.db')
     if path.isfile(db_file):
-        os.remove(db_file)
+        remove(db_file)
     
     # set connction and default values
-    (rest_ses, first_flag) = get_db_connection('database/')
+    (rest_ses, first_flag) = get_db_connection('database')
     if first_flag:
-        return 'Hard reset and {}'.format(init_all_tables(rest_ses))
+        # set connction and default values
+        result = init_all_tables(rest_ses)
+    
+        # set logofiles if its available
+        for file in os.listdir(app.config['UPLOAD_FOLDER'] ):
+            for item in rest_ses.query(Restaurant).all():
+                if int(file[11:].split('.')[0]) == item.id:
+                    item.logoname = file
+                    rest_ses.add(item)
+                    print(vars(item))
+        rest_ses.commit() 
+
+        return 'Hard reset and {}'.format(result)
 
 # 7.2*. Routing for soft reset (delete db records and set initial data)
 @app.route('/restaurants/admin/softreset')
@@ -906,7 +954,20 @@ def soft_reset():
         rest_ses.commit()    
     
     # set connction and default values
-    return 'Soft reset and {}'.format(init_all_tables(rest_ses))
+    result = init_all_tables(rest_ses)
+ 
+    # set logofiles if its available
+    for file in listdir(app.config['UPLOAD_FOLDER']):
+        for item in rest_ses.query(Restaurant).all():
+            try:
+                if int(file[11:].split('.')[0]) == item.id:
+                    item.logoname = file
+                    rest_ses.add(item)
+            except: 
+                pass
+    rest_ses.commit() 
+    
+    return 'Soft reset and {}'.format(result)
 
         
         
@@ -916,6 +977,10 @@ if __name__ == '__main__':
     app.secret_key = 'Add#flash*key_10'
     # strat debug mode
     app.debug = True
+    # set upload folder for logos and file size
+    app.config['UPLOAD_FOLDER'] = path.join('static', 'logos')
+    app.config['MAX_CONTENT_LENGTH'] = 512 * 1024   # 0.5 MB
+
     # run server at current port from os.environ 
     # or default port 5000
     os_port = int(environ.get('PORT', 5000))   # Use PORT if it's there.

@@ -15,6 +15,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 # will help to set up CLASS code (short name)
 Base = declarative_base()
+# import os.path as path
+from os import path
 
 ## CLASS part
 ### MAPPER part
@@ -117,7 +119,7 @@ def create_db(db_path):
     return 'Database was created!'
 
 def get_db_connection(folder_path = ''):
-    db_path = '{}restaurantmenu.db'.format(folder_path)
+    db_path = path.join(folder_path, 'restaurantmenu.db')
     fill_db_flag = False
     if not path.isfile(db_path):
         # create DB file during first run

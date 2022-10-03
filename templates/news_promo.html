@@ -47,8 +47,8 @@
 				<!--<div class="item div_post">-->
 					{% if promo_lst %}
 						{% set ns = namespace(prev_rest_id = None) %}						
-						{% for (item, logo_name) in promo_lst %}    
-							{% set (rest_name, mnu_name, price, comment, rest_id) = item %}
+						{% for item in promo_lst %}    
+							{% set (rest_name, mnu_name, price, comment, rest_id, logoname) = item %}
 							
 							{% if rest_id != ns.prev_rest_id %}
 								{% if ns.prev_rest_id != None %}
@@ -59,7 +59,12 @@
 								{% endif %}	
 
 								<div class="item div_post">
-									<img src={{url_for("static", filename = logo_name)}}
+									{% if logoname %}
+										{% set logo_filename="logos/" ~ logoname %}
+									{% else %}
+										{% set logo_filename="no_image.jpg" %}
+									{% endif %}	
+									<img src={{url_for("static", filename = logo_filename)}}
 										 width="160" 
 										 height="160" 
 										 alt="Restaurant logo">

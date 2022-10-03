@@ -2,8 +2,9 @@
 /server_back
 database/__pycache__
 
-# skip database file
+# skip database file and logos
 database/restaurantmenu.db
+/static/logos
 
 
 # notes files
