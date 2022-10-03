@@ -3,7 +3,7 @@
 from flask import Flask, render_template, request, redirect, url_for, \
                   jsonify, flash
 # select module to check file upload security
-from werkzeug.utils import secure_filename
+# from werkzeug.utils import secure_filename
 
 # database imports
 # from database_setup module import CLASSES 
@@ -14,7 +14,7 @@ from database.database_setup import Base, MenuItem, Restaurant, \
 from database.auto_input_db import init_all_tables
 
 # import os.path as path, get server port via environ
-from os import path, environ, remove, listdir
+from os import path, environ, remove, listdir, mkdir
 # import os module for different operations
 # import os
 
@@ -977,8 +977,12 @@ if __name__ == '__main__':
     app.secret_key = 'Add#flash*key_10'
     # strat debug mode
     app.debug = True
+    # check if folder existed, if not - create
+    logo_folder = path.join('static', 'logos2')
+    if not path.isdir(logo_folder):
+        mkdir(logo_folder)
     # set upload folder for logos and file size
-    app.config['UPLOAD_FOLDER'] = path.join('static', 'logos')
+    app.config['UPLOAD_FOLDER'] = logo_folder
     app.config['MAX_CONTENT_LENGTH'] = 512 * 1024   # 0.5 MB
 
     # run server at current port from os.environ 
