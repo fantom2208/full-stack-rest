@@ -30,6 +30,27 @@ if first_flag:
 app = Flask(__name__)
 
 
+def dir_remove(dir_path, print_flg=False):
+    # remove next time
+    try:
+        for item in listdir(dir_path):
+            if path.isfile(path.join(dir_path, item)):  # if item is file
+                if print_flg:
+                    print('remove file: ', path.join(dir_path, item))          
+                remove(path.join(dir_path, item))       
+            else:                           # item is folder - recursive call
+                if print_flg:
+                    print('found dir: ', path.join(dir_path, item))
+                dir_remove(path.join(dir_path, item), print_flg)
+
+        # remove folder itself
+        if print_flg:
+            print('remove dir: ', dir_path) 
+        rmdir(dir_path)
+        return "Directory '{}' has been removed successfully".format(dir_path)
+    except OSError as error:
+        return "{}.Directory '{}' can not be removed".format(error, dir_path)
+
 # method to set item attributs via form dictionary
 def set_item_attr(add_item, item_dic):
     for (key, item) in item_dic.items():
@@ -969,13 +990,33 @@ def soft_reset():
     
     return 'Soft reset and {}'.format(result)
 
-# 7.3*. Routing to show folders content at server
+# 7.3*. Routing to show folders/files content at server
 @app.route('/restaurants/admin/showdir/')
 @app.route('/restaurants/admin/showdir/<string:fld_path>')
 def show_dir(fld_path = '.'):
+    # create path with /
     fld_path = fld_path.replace('-','/')
-    return {fld_path : listdir(fld_path)}
+    
+    #check if last element is file
+    if path.isfile(fld_path):       #read file
+        content = ""
+        with open(fld_path) as file:
+            for line in file:
+                content = content + line.rstrip()  + '<br>'
+        return content
+    else:                           # show directory content
+        path_dict = {'folder' : fld_path}
+        content_lst = []
+        for item in listdir(fld_path):
+            if path.isfile(path.join(fld_path, item)):
+                content_lst.append({item : 'file'})
+            else:
+                content_lst.append({item : 'dir'})
         
+        path_dict['content'] = content_lst
+        return jsonify(path_dict)
+
+
         
 # if mani module to execute
 if __name__ == '__main__':
@@ -987,17 +1028,7 @@ if __name__ == '__main__':
     logo_folder = path.join('static', 'logos')
     if not path.isdir(logo_folder):
         mkdir(logo_folder)
-    # remove next time
-    try:
-        del_logo_folder = path.join('static', 'logos2')
-        for file in listdir(del_logo_folder):
-            remove(path.join(del_logo_folder,file))
-        rmdir(del_logo_folder)
-        print("Directory '% s' has been removed successfully" % del_logo_folder)
-    except OSError as error:
-        print(error)
-        print("Directory '% s' can not be removed" % del_logo_folder)
-
+    
     # set upload folder for logos and file size
     app.config['UPLOAD_FOLDER'] = logo_folder
     app.config['MAX_CONTENT_LENGTH'] = 512 * 1024   # 0.5 MB
