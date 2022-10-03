@@ -8,19 +8,21 @@ from flask import Flask, render_template, request, redirect, url_for, \
 from database.database_setup import Base, MenuItem, Restaurant, \
                                     RestMenuItem, get_db_connection
 
+# from auto_input_db module import initial values for DB tales  
+from database.auto_input_db import init_all_tables
 
 # import os.path as path
 from os import path
 # import os module to get server port
 from os import environ
-
-
-
+import os
 
 
 
 # check if DB file is existed and get connection via function
 (rest_ses, first_flag) = get_db_connection('database/')
+if first_flag:
+    print(init_all_tables(rest_ses))
 
 
 # instance of Flask object
@@ -187,7 +189,7 @@ def restaurant_id(rst_id):
                                            RestMenuItem.price, RestMenuItem.comment).\
                                      join(MenuItem).\
                                      filter(RestMenuItem.restaurant_id == rst_id_val).\
-                                     order_by(MenuItem.course).all()
+                                     order_by(MenuItem.course.desc()).all()
     
     # responce: HTML or JSON API
     if 'api.restaurants' in request.path:      # API responce
@@ -762,16 +764,16 @@ def menu_items(rst_id = None):
             # query to get menu items with ids not existed for restaurant id 
             no_menu_item_lst = rest_ses.query(MenuItem).\
                                         filter(~MenuItem.id.in_(mnu_itms_ids)).\
-                                        order_by(MenuItem.course).all()
+                                        order_by(MenuItem.course.desc()).all()
         else:                   # no menu - select all menu items
-            no_menu_item_lst = rest_ses.query(MenuItem).order_by(MenuItem.course).all()
+            no_menu_item_lst = rest_ses.query(MenuItem).order_by(MenuItem.course.desc()).all()
        
         return render_template('menu_items.html', menu_items = no_menu_item_lst,
                                 rest = restaurant)      
     else:                           # show all menu items 
         rst_itm = None
         # query to get all menu items
-        menu_items_all_rec = rest_ses.query(MenuItem).order_by(MenuItem.course).all() 
+        menu_items_all_rec = rest_ses.query(MenuItem).order_by(MenuItem.course.desc()).all() 
 
         # responce: HTML or JSON API
         if 'api.restaurants' in request.path:      # API responce
@@ -865,6 +867,47 @@ def news_promo():
 @app.route('/restaurants/contact_us')
 def contact_us():
     return render_template('contact_us.html')
+
+
+# 7*. Routing to admin database
+# 7.1*. Routing for hard reset (delete db file and set initial data)
+@app.route('/restaurants/admin/hardreset')
+def hard_reset():
+    global rest_ses
+
+    # close connection
+    rest_ses.close()
+    # remove db file
+    db_file = 'database/restaurantmenu.db'
+    if path.isfile(db_file):
+        os.remove(db_file)
+    
+    # set connction and default values
+    (rest_ses, first_flag) = get_db_connection('database/')
+    if first_flag:
+        return 'Hard reset and {}'.format(init_all_tables(rest_ses))
+
+# 7.2*. Routing for soft reset (delete db records and set initial data)
+@app.route('/restaurants/admin/softreset')
+def soft_reset():
+    # clear RestMenuItem table
+    for item in rest_ses.query(RestMenuItem).all():
+        rest_ses.delete(item)
+        rest_ses.commit() 
+
+    # clear Restaurant table
+    for item in rest_ses.query(Restaurant).all():
+        rest_ses.delete(item)
+        rest_ses.commit()  
+
+    # clear MenuItem table
+    for item in rest_ses.query(MenuItem).all():
+        rest_ses.delete(item)
+        rest_ses.commit()    
+    
+    # set connction and default values
+    return 'Soft reset and {}'.format(init_all_tables(rest_ses))
+
         
         
 # if mani module to execute
