@@ -30,6 +30,23 @@ if first_flag:
 app = Flask(__name__)
 
 
+def restore_logonames_by_id():
+    # set logofiles if its available
+    for file in listdir(app.config['UPLOAD_FOLDER']):
+        for item in rest_ses.query(Restaurant).all():
+            # if no logo filename
+            if not item.logoname:
+                try:
+                    # if found logo file with same ID as item.id
+                    if int(file[11:].split('.')[0]) == item.id:
+                   
+                        item.logoname = file
+                        rest_ses.add(item)
+                except:     
+                    pass        # skip
+    rest_ses.commit() 
+
+
 def dir_remove(dir_path, print_flg=False):
     # remove next time
     try:
@@ -928,6 +945,7 @@ def contact_us():
 
 # 7*. Routing to admin database
 # 7.1*. Routing for hard reset (delete db file and set initial data)
+@app.route('/restaurants/admin/hardreset/logos')
 @app.route('/restaurants/admin/hardreset')
 def hard_reset():
     global rest_ses
@@ -945,19 +963,14 @@ def hard_reset():
         # set connction and default values
         result = init_all_tables(rest_ses)
     
-        # set logofiles if its available
-        for file in listdir(app.config['UPLOAD_FOLDER'] ):
-            for item in rest_ses.query(Restaurant).all():
-                if int(file[11:].split('.')[0]) == item.id:
-                    item.logoname = file
-                    rest_ses.add(item)
-                    print(vars(item))
-        rest_ses.commit() 
+        if 'logos' in request.path:      # in path logos flag - restore logo
+            restore_logonames_by_id()
 
         return 'Hard reset and {}'.format(result)
 
 # 7.2*. Routing for soft reset (delete db records and set initial data)
-@app.route('/restaurants/admin/softreset')
+@app.route('/restaurants/admin/softreset/logos')
+@app.route('/restaurants/admin/softreset/')
 def soft_reset():
     # clear RestMenuItem table
     for item in rest_ses.query(RestMenuItem).all():
@@ -977,16 +990,8 @@ def soft_reset():
     # set connction and default values
     result = init_all_tables(rest_ses)
  
-    # set logofiles if its available
-    for file in listdir(app.config['UPLOAD_FOLDER']):
-        for item in rest_ses.query(Restaurant).all():
-            try:
-                if int(file[11:].split('.')[0]) == item.id:
-                    item.logoname = file
-                    rest_ses.add(item)
-            except: 
-                pass
-    rest_ses.commit() 
+    if 'logos' in request.path:      # in path logos flag - restore logo
+        restore_logonames_by_id()
     
     return 'Soft reset and {}'.format(result)
 
@@ -1005,16 +1010,14 @@ def show_dir(fld_path = '.'):
                 content = content + line.rstrip()  + '<br>'
         return content
     else:                           # show directory content
-        path_dict = {'folder' : fld_path}
         content_lst = []
         for item in listdir(fld_path):
             if path.isfile(path.join(fld_path, item)):
-                content_lst.append({item : 'file'})
+                content_lst.append('file  -  {}'.format(item))
             else:
-                content_lst.append({item : 'dir'})
-        
-        path_dict['content'] = content_lst
-        return jsonify(path_dict)
+                content_lst.append('dir   -  {}'.format(item))
+
+        return '<br>'.join(content_lst)
 
 
         

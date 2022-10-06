@@ -46,32 +46,38 @@ def init_all_tables(rest_ses):
     # add restaurants
     TopBurger = Restaurant(name = 'Top Burger', 
                            description = 'Home restaurant at the historical center of the town',
-                           address = 'Hloria, Middle street, 12')
+                           address = 'Hloria, Middle street, 12',
+                           logoname = 'logo_rst_id1.jpg')
     rest_ses.add(TopBurger)
 
     TacoHut = Restaurant(name = 'Taco Hut', 
                          description = 'Mexican restaurant at the town',
-                         address = 'Raho, Central street, 32')
+                         address = 'Raho, Central street, 32',
+                         logoname = 'logo_rst_id2.jpg')
     rest_ses.add(TacoHut)
 
     SuperStirFry = Restaurant(name = 'Super Stir Fry',
                                 description = 'Restaurant of all fry food at the town',
-                                address = 'Townsquare, Side street, 2')
+                                address = 'Townsquare, Side street, 2',
+                                logoname = 'logo_rst_id3.jpg')
     rest_ses.add(SuperStirFry)
 
     BlueBurgers = Restaurant(name = 'Blue Burgers', 
                              description = 'Nice restaurant at the town',
-                             address = 'Georgia, Central square, 2')
+                             address = 'Georgia, Central square, 2',
+                             logoname = 'logo_rst_id4.jpg')
     rest_ses.add(BlueBurgers)
 
     PandaGarden = Restaurant(name = "Panda Garden",
                              description = 'Nice China restaurant with homemade dishes',
-                             address = 'Kaltaki, Central street, 12')
+                             address = 'Kaltaki, Central street, 12',
+                             logoname = 'logo_rst_id5.jpg')
     rest_ses.add(PandaGarden)
 
     UrbanBurger = Restaurant(name = "Urban Burger",
                              description = 'Modern restaurant at trade center of the town',
-                             address = 'Palaster, Trade street, 142a')
+                             address = 'Palaster, Trade street, 142a',
+                             logoname = 'logo_rst_id6.jpg')
     rest_ses.add(UrbanBurger)
 
     # commit changes
